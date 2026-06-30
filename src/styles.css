@@ -106,10 +106,25 @@ textarea {
   background: #c0c0c0;
 }
 
+.status-red {
+  background: #d60000;
+}
+
 .chat-panel {
   display: flex;
   flex-direction: column;
   gap: 10px;
+}
+
+.level-strip {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 8px;
+  border: 1px solid #808080;
+  background: #000080;
+  color: white;
+  text-transform: capitalize;
 }
 
 .chat-line {
@@ -127,10 +142,38 @@ textarea {
   background: #e8f3ff;
 }
 
+.verdict-list {
+  display: grid;
+  gap: 4px;
+  font-size: 13px;
+}
+
+.verdict-pass,
+.verdict-fail {
+  padding: 5px 6px;
+  border: 1px solid #808080;
+}
+
+.verdict-pass {
+  background: #e8ffe8;
+}
+
+.verdict-fail {
+  background: #ffe8e8;
+}
+
 .monitor-panel {
   display: grid;
   align-content: start;
   gap: 12px;
+}
+
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 4px 0;
+  border-bottom: 1px dotted #808080;
 }
 
 .monitor-panel label {
@@ -138,9 +181,29 @@ textarea {
   gap: 4px;
 }
 
+.status-banner {
+  padding: 8px;
+  border: 1px solid #000;
+  text-align: center;
+  font-weight: 700;
+}
+
+.status-playing {
+  background: #f4f4f4;
+}
+
+.status-passed,
+.status-won {
+  background: #b8ffb8;
+}
+
+.status-failed {
+  background: #ffb8b8;
+}
+
 .composer {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 120px;
+  grid-template-columns: minmax(0, 1fr) 128px;
   gap: 8px;
   margin: 0 8px 8px;
   padding: 8px;
@@ -150,6 +213,12 @@ textarea {
   width: 100%;
   min-height: 80px;
   resize: none;
+}
+
+.composer-actions {
+  display: grid;
+  align-content: start;
+  gap: 6px;
 }
 
 @media (max-width: 820px) {
@@ -172,5 +241,9 @@ textarea {
 
   .composer {
     grid-template-columns: 1fr;
+  }
+
+  .composer-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
