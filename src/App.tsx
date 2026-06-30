@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Button } from "@react95/core/Button";
 import { Frame } from "@react95/core/Frame";
 import { ProgressBar } from "@react95/core/ProgressBar";
@@ -9,6 +10,9 @@ import { useGameStore } from "./store/game-store";
 function App() {
   const {
     attempts,
+    generateTrap,
+    isGeneratingTrap,
+    isJudging,
     lastResult,
     levelIndex,
     nextLevel,
@@ -19,6 +23,8 @@ function App() {
     setReply,
     status,
     submitReply,
+    trapAttackType,
+    trapPrompt,
   } = useGameStore();
   const level = levels[levelIndex];
   const activeRules = getActiveRules(level.levelNumber);
@@ -32,7 +38,12 @@ function App() {
       .filter((result) => result.passed)
       .map((result) => result.ruleId) ?? [],
   );
-  const canSubmit = reply.trim().length > 0 && status === "playing";
+  const canSubmit =
+    reply.trim().length > 0 && status === "playing" && !isJudging;
+
+  useEffect(() => {
+    void generateTrap();
+  }, [generateTrap, levelIndex]);
 
   return (
     <main className="desktop">
@@ -78,10 +89,11 @@ function App() {
           <Frame className="panel chat-panel" boxShadow="$in" bgColor="white">
             <div className="level-strip">
               <strong>Level {level.levelNumber}</strong>
-              <span>{level.attackType.replaceAll("_", " ")}</span>
+              <span>{trapAttackType.replaceAll("_", " ")}</span>
             </div>
             <div className="chat-line user-line">
-              <strong>User:</strong> {level.trapPrompt}
+              <strong>User:</strong>{" "}
+              {isGeneratingTrap ? "Generating trap prompt..." : trapPrompt}
             </div>
             <div className="chat-line assistant-line">
               <strong>Assistant:</strong>{" "}
@@ -127,7 +139,7 @@ function App() {
               />
             </label>
             <div className={`status-banner status-${status}`}>
-              {status.toUpperCase()}
+              {isJudging ? "JUDGING" : status.toUpperCase()}
             </div>
           </Frame>
         </div>
@@ -136,11 +148,12 @@ function App() {
           <TextArea
             rows={4}
             value={reply}
+            disabled={isJudging}
             onChange={(event) => setReply(event.currentTarget.value)}
           />
           <div className="composer-actions">
             <Button disabled={!canSubmit} onClick={submitReply}>
-              Run Reply
+              {isJudging ? "Judging..." : "Run Reply"}
             </Button>
             {status === "failed" ? <Button onClick={retryLevel}>Retry</Button> : null}
             {status === "passed" ? <Button onClick={nextLevel}>Next</Button> : null}

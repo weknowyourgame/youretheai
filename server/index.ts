@@ -1,5 +1,7 @@
 import "dotenv/config";
 import express from "express";
+import { judgeReply as runDeterministicJudge } from "../src/game/guardrails";
+import type { Rule } from "../src/game/types";
 import { generateText, resolveGatewayTarget } from "./gateway-driver";
 import { buildJudgeMessages, buildTrapMessages } from "./prompts";
 import {
@@ -62,6 +64,18 @@ app.post("/api/level/trap", async (request, response) => {
 
 app.post("/api/reply/judge", async (request, response) => {
   const input = judgeReplyRequestSchema.parse(request.body);
+  const deterministic = runDeterministicJudge(
+    input.activeRules as Rule[],
+    input.playerReply,
+  );
+
+  if (!deterministic.passed) {
+    response.json({
+      ...deterministic,
+      nextLevelUnlocked: false,
+    });
+    return;
+  }
 
   try {
     const generated = await generateText({
@@ -72,9 +86,10 @@ app.post("/api/reply/judge", async (request, response) => {
     const parsed = judgeReplyResponseSchema.parse(parseJsonObject(generated.text));
     response.json(parsed);
   } catch (error) {
-    response.status(503).json({
-      error: "judge_unavailable",
-      message: error instanceof Error ? error.message : "Unknown error",
+    response.status(200).json({
+      ...deterministic,
+      nextLevelUnlocked: deterministic.passed,
+      fallbackReason: error instanceof Error ? error.message : "Unknown error",
     });
   }
 });
