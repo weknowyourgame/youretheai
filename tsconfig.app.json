@@ -1,0 +1,30 @@
+{
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
+    "target": "ES2022",
+    "useDefineForClassFields": true,
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "allowJs": false,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "paths": {
+      "@react95/core/Button": ["./node_modules/@react95/core/dist/types/Button/Button.d.ts"],
+      "@react95/core/Frame": ["./node_modules/@react95/core/dist/types/Frame/Frame.d.ts"],
+      "@react95/core/ProgressBar": ["./node_modules/@react95/core/dist/types/ProgressBar/ProgressBar.d.ts"],
+      "@react95/core/TextArea": ["./node_modules/@react95/core/dist/types/TextArea/TextArea.d.ts"],
+      "@react95/core/TitleBar": ["./node_modules/@react95/core/dist/types/TitleBar/TitleBar.d.ts"]
+    }
+  },
+  "include": ["src"]
+}
