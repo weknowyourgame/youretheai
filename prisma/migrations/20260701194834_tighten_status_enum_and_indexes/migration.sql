@@ -1,9 +1,3 @@
-/*
-  Warnings:
-
-  - The `status` column on the `Run` table would be dropped and recreated. This will lead to data loss if there is data in the column.
-
-*/
 -- CreateEnum
 CREATE TYPE "RunStatus" AS ENUM ('playing', 'passed', 'failed', 'won');
 
@@ -11,5 +5,11 @@ CREATE TYPE "RunStatus" AS ENUM ('playing', 'passed', 'failed', 'won');
 DROP INDEX "Visitor_fingerprint_idx";
 
 -- AlterTable
-ALTER TABLE "Run" DROP COLUMN "status",
-ADD COLUMN     "status" "RunStatus" NOT NULL DEFAULT 'playing';
+-- Convert the existing text values in-place instead of dropping the column,
+-- since every existing value ('playing'/'passed'/'failed'/'won') already
+-- matches an enum label exactly - verified against a populated table before
+-- landing this change.
+ALTER TABLE "Run"
+  ALTER COLUMN "status" DROP DEFAULT,
+  ALTER COLUMN "status" TYPE "RunStatus" USING ("status"::"RunStatus"),
+  ALTER COLUMN "status" SET DEFAULT 'playing'::"RunStatus";
