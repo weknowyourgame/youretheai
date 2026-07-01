@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
-import { generateText } from "../../../../server/gateway-driver";
-import { buildTrapMessages } from "../../../../server/prompts";
+import { generateText } from "../../../_lib/server/gateway-driver";
+import { buildTrapMessages } from "../../../_lib/server/prompts";
 import {
   generateTrapRequestSchema,
   generateTrapResponseSchema,
-} from "../../../../server/schemas";
+} from "../../../_lib/server/schemas";
 
 export const runtime = "nodejs";
 

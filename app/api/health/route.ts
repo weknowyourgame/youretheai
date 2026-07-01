@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { resolveGatewayTarget } from "../../../server/gateway-driver";
+import { resolveGatewayTarget } from "../../_lib/server/gateway-driver";
 
 export const runtime = "nodejs";
 

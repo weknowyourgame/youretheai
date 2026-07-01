@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
 import { judgeReply as runDeterministicJudge } from "../../../_lib/game/guardrails";
 import type { Rule } from "../../../_lib/game/types";
-import { generateText } from "../../../../server/gateway-driver";
-import { buildJudgeMessages } from "../../../../server/prompts";
+import { generateText } from "../../../_lib/server/gateway-driver";
+import { buildJudgeMessages } from "../../../_lib/server/prompts";
 import {
   judgeReplyRequestSchema,
   judgeReplyResponseSchema,
-} from "../../../../server/schemas";
+} from "../../../_lib/server/schemas";
 
 export const runtime = "nodejs";
 
