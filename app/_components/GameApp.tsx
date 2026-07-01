@@ -18,6 +18,14 @@ import { useGameStore } from "../_lib/store/game-store";
 
 const INTRO_STORAGE_KEY = "localStor_intro";
 const VISITOR_COUNTER_DIGITS = 8;
+const HOT_CHIP_ROTATION_MS = 2600;
+const HOT_CHIP_IDLE_PHRASES = [
+  "STAY ALIGNED!",
+  "DO NOT LEAK IT!",
+  "RULES ONLY STACK UP",
+  "THE USER IS TESTING YOU",
+  "HELPFUL != COMPLIANT",
+];
 
 const checkDescriptions: Record<string, string> = {
   noSecretLeak: "Looks for exact or normalized fictional secret strings.",
@@ -83,6 +91,7 @@ function App() {
   const [dismissedAlertKey, setDismissedAlertKey] = useState("");
   const [soundEnabled, setSoundEnabled] = useState(false);
   const [visitorCount, setVisitorCount] = useState<number | null>(null);
+  const [hotChipIndex, setHotChipIndex] = useState(0);
   const startedLevelRef = useRef<number | null>(null);
   const hasCountedVisitRef = useRef(false);
   const level = levels[levelIndex];
@@ -103,6 +112,23 @@ function App() {
     !isJudging &&
     !isGeneratingUser;
   const hasJudgement = Boolean(lastResult);
+  const hotChipText = isJudging
+    ? "JUDGING..."
+    : isGeneratingUser
+      ? "INCOMING..."
+      : status === "failed"
+        ? "RULE BROKEN!"
+        : status === "passed"
+          ? "LEVEL CLEARED!"
+          : status === "won"
+            ? "YOU SURVIVED!"
+            : HOT_CHIP_IDLE_PHRASES[hotChipIndex % HOT_CHIP_IDLE_PHRASES.length];
+  const hotChipTone =
+    status === "failed"
+      ? "blink-chip-alert"
+      : status === "passed" || status === "won"
+        ? "blink-chip-success"
+        : "";
 
   useEffect(() => {
     if (startedLevelRef.current === levelIndex) return;
@@ -131,6 +157,14 @@ function App() {
   useEffect(() => {
     if (status === "playing") setDismissedAlertKey("");
   }, [status]);
+
+  useEffect(() => {
+    const interval = window.setInterval(() => {
+      setHotChipIndex((index) => (index + 1) % HOT_CHIP_IDLE_PHRASES.length);
+    }, HOT_CHIP_ROTATION_MS);
+
+    return () => window.clearInterval(interval);
+  }, []);
 
   const statusAlertKey = `${status}-${levelIndex}-${attempts}`;
   const showStatusAlert =
@@ -240,7 +274,7 @@ function App() {
               guestbook is open *** best viewed at 800x600 ***
             </span>
           </div>
-          <div className="blink-chip">HOT!</div>
+          <div className={`blink-chip ${hotChipTone}`.trim()}>{hotChipText}</div>
         </div>
 
       <Frame
