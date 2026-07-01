@@ -11,17 +11,24 @@ type ModelProfile = {
 
 export const modelProfiles: Record<ModelProfileId, ModelProfile> = {
   "trap-generator": {
-    primary: "anthropic/claude-sonnet-4-5",
-    fallbacks: ["google/gemini-2.5-pro"],
+    primary: "openai/gpt-oss-120b:free",
+    fallbacks: [
+      "meta-llama/llama-3.3-70b-instruct:free",
+      "qwen/qwen3-coder:free",
+    ],
   },
   judge: {
-    primary: "anthropic/claude-sonnet-4-5",
-    fallbacks: ["google/gemini-2.5-pro"],
+    primary: "openai/gpt-oss-120b:free",
+    fallbacks: [
+      "meta-llama/llama-3.3-70b-instruct:free",
+      "qwen/qwen3-coder:free",
+    ],
   },
   "cheap-classifier": {
-    primary: "deepseek/deepseek-v3",
+    primary: "meta-llama/llama-3.2-3b-instruct:free",
   },
   "daily-challenge": {
-    primary: "anthropic/claude-sonnet-4-5",
+    primary: "openai/gpt-oss-120b:free",
+    fallbacks: ["meta-llama/llama-3.3-70b-instruct:free"],
   },
 };

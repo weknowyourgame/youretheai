@@ -1,7 +1,5 @@
 import { modelProfiles, type ModelProfileId } from "./model-config";
 
-const OPENROUTER_DIRECT = "https://openrouter.ai/api/v1/chat/completions";
-
 type ChatMessage = {
   role: "system" | "user" | "assistant";
   content: string;
@@ -20,12 +18,18 @@ type GatewayResponse = {
 
 export function resolveGatewayTarget() {
   const openRouterKey = process.env.OPENROUTER_API_KEY;
+  const gatewayBase = (process.env.AI_GATEWAY_URL ?? "").replace(/\/$/, "");
 
   if (!openRouterKey) {
     throw new Error("OPENROUTER_API_KEY is not configured");
   }
 
-  const gatewayBase = (process.env.AI_GATEWAY_URL ?? "").replace(/\/$/, "");
+  if (!gatewayBase) {
+    throw new Error(
+      "AI_GATEWAY_URL is not configured. Prompt Panic only calls OpenRouter through Cloudflare AI Gateway.",
+    );
+  }
+
   const cloudflareToken = process.env.CLOUDFLARE_API_TOKEN;
   const headers: Record<string, string> = {
     Authorization: `Bearer ${openRouterKey}`,
@@ -34,21 +38,13 @@ export function resolveGatewayTarget() {
     "X-OpenRouter-Title": process.env.OPENROUTER_TITLE ?? "Prompt Panic 95",
   };
 
-  if (gatewayBase) {
-    if (cloudflareToken) {
-      headers["cf-aig-authorization"] = `Bearer ${cloudflareToken}`;
-    }
-
-    return {
-      mode: "cloudflare-gateway" as const,
-      url: `${gatewayBase}/openrouter/chat/completions`,
-      headers,
-    };
+  if (cloudflareToken) {
+    headers["cf-aig-authorization"] = `Bearer ${cloudflareToken}`;
   }
 
   return {
-    mode: "openrouter-direct" as const,
-    url: OPENROUTER_DIRECT,
+    mode: "cloudflare-gateway" as const,
+    url: `${gatewayBase}/openrouter/chat/completions`,
     headers,
   };
 }
