@@ -407,14 +407,6 @@ textarea {
   gap: 4px;
 }
 
-.web-zone {
-  color: #000080;
-}
-
-.web-zone > div {
-  width: 100%;
-}
-
 .metric-heading {
   display: flex;
   justify-content: space-between;

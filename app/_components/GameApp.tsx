@@ -4,7 +4,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Alert } from "@react95/core/Alert";
 import { Button } from "@react95/core/Button";
 import { Cursor } from "@react95/core/Cursor";
-import { Dropdown } from "@react95/core/Dropdown";
 import { Frame } from "@react95/core/Frame";
 import { List } from "@react95/core/List";
 import { Modal } from "@react95/core/Modal";
@@ -18,7 +17,7 @@ import type { Rule } from "../_lib/game/types";
 import { useGameStore } from "../_lib/store/game-store";
 
 const INTRO_STORAGE_KEY = "localStor_intro";
-const visitorDigits = "00042069".split("");
+const VISITOR_COUNTER_DIGITS = 8;
 
 const checkDescriptions: Record<string, string> = {
   noSecretLeak: "Looks for exact or normalized fictional secret strings.",
@@ -83,7 +82,9 @@ function App() {
   const [showCloseConfirm, setShowCloseConfirm] = useState(false);
   const [dismissedAlertKey, setDismissedAlertKey] = useState("");
   const [soundEnabled, setSoundEnabled] = useState(false);
+  const [visitorCount, setVisitorCount] = useState<number | null>(null);
   const startedLevelRef = useRef<number | null>(null);
+  const hasCountedVisitRef = useRef(false);
   const level = levels[levelIndex];
   const activeRules = getActiveRules(level.levelNumber);
   const failedRules = new Set(
@@ -113,6 +114,18 @@ function App() {
     if (window.localStorage.getItem(INTRO_STORAGE_KEY) !== "seen") {
       setShowIntro(true);
     }
+  }, []);
+
+  useEffect(() => {
+    if (hasCountedVisitRef.current) return;
+    hasCountedVisitRef.current = true;
+
+    fetch("/api/visitors", { method: "POST" })
+      .then((response) => response.json())
+      .then((data: { count?: number }) => {
+        if (typeof data.count === "number") setVisitorCount(data.count);
+      })
+      .catch(() => setVisitorCount(null));
   }, []);
 
   useEffect(() => {
@@ -400,16 +413,6 @@ function App() {
               <span>Attempts</span>
               <strong>{attempts}</strong>
             </div>
-            <label className="web-zone">
-              <span>Web Zone</span>
-              <Dropdown
-                aria-label="Decorative web zone selector"
-                className={Cursor.Pointer}
-                onChange={() => undefined}
-                options={["Cloudflare Gateway", "OpenRouter Free", "GeoCities"]}
-                value="Cloudflare Gateway"
-              />
-            </label>
             <label className={hasJudgement ? "metric" : "metric metric-pending"}>
               <span className="metric-heading">
                 <span>Leak Risk</span>
@@ -478,10 +481,6 @@ function App() {
 
       <footer className="guestbook-footer" aria-label="Y2K footer">
         <div className="y2k-badges">
-          <span className="y2k-badge under-construction">
-            <span className="badge-icon">!</span>
-            UNDER CONSTRUCTION
-          </span>
           <span className="y2k-badge netscape-badge">BEST VIEWED IN NETSCAPE</span>
         </div>
         <div className="webring">
@@ -489,10 +488,13 @@ function App() {
         </div>
         <div className="counter-row">
           Visitors:
-          <span className="visitor-counter" aria-label="Fake visitor counter">
-            {visitorDigits.map((digit, index) => (
-              <span key={`${index}-${digit}`}>{digit}</span>
-            ))}
+          <span className="visitor-counter" aria-label="Visitor counter">
+            {(visitorCount === null ? "" : String(visitorCount))
+              .padStart(VISITOR_COUNTER_DIGITS, "0")
+              .split("")
+              .map((digit, index) => (
+                <span key={`${index}-${digit}`}>{digit}</span>
+              ))}
           </span>
         </div>
         <button
@@ -501,7 +503,7 @@ function App() {
           onClick={toggleDialUpSting}
           type="button"
         >
-          56k sting: {soundEnabled ? "ON" : "OFF"}
+          Dial-up SFX: {soundEnabled ? "ON" : "OFF"}
         </button>
       </footer>
       </div>
