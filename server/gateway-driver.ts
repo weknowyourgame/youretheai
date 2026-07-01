@@ -34,7 +34,7 @@ export function resolveGatewayTarget() {
   const headers: Record<string, string> = {
     Authorization: `Bearer ${openRouterKey}`,
     "Content-Type": "application/json",
-    "HTTP-Referer": process.env.OPENROUTER_REFERER ?? "http://localhost:5173",
+    "HTTP-Referer": process.env.OPENROUTER_REFERER ?? "http://localhost:3000",
     "X-OpenRouter-Title": process.env.OPENROUTER_TITLE ?? "Prompt Panic 95",
   };
 

@@ -2,7 +2,7 @@
 
 A Windows 95-style prompt-defense game where you play as an AI assistant trying to stay helpful while refusing to leak fictional private data.
 
-The game uses stacked visible rules, trap prompts, deterministic guardrails, and LLM judging through OpenRouter routed through Cloudflare AI Gateway.
+The game uses stacked visible rules, trap prompts, deterministic guardrails, and LLM judging through OpenRouter routed through Cloudflare AI Gateway. It is built as a single Next.js app, with the game UI and API routes deployed together.
 
 ## Run Locally
 
@@ -11,7 +11,7 @@ npm install
 npm run dev
 ```
 
-Open the Vite URL, usually `http://localhost:5173`.
+Open the Next.js dev URL, usually `http://localhost:3000`.
 
 The game works offline with hardcoded traps and deterministic guardrails if the gateway is not configured. Add `.env` values when you want OpenRouter-generated traps and LLM judging through Cloudflare AI Gateway.
 
@@ -31,9 +31,8 @@ CLOUDFLARE_API_TOKEN=
 ## Scripts
 
 ```bash
-npm run dev         # API server + Vite client
-npm run dev:client  # Vite client only
-npm run dev:server  # Express API on :8787
-npm run build       # TypeScript + production client build
+npm run dev         # Next.js app and API routes
+npm run build       # Production Next.js build
+npm run start       # Serve the production build
 npm test            # Vitest guardrail tests
 ```

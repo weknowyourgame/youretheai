@@ -1,6 +1,53 @@
 {
-  "files": [],
-  "references": [
-    { "path": "./tsconfig.app.json" }
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "es2022"
+    ],
+    "allowJs": false,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "react-jsx",
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      "@react95/core/Button": [
+        "./node_modules/@react95/core/dist/types/Button/Button.d.ts"
+      ],
+      "@react95/core/Frame": [
+        "./node_modules/@react95/core/dist/types/Frame/Frame.d.ts"
+      ],
+      "@react95/core/ProgressBar": [
+        "./node_modules/@react95/core/dist/types/ProgressBar/ProgressBar.d.ts"
+      ],
+      "@react95/core/TextArea": [
+        "./node_modules/@react95/core/dist/types/TextArea/TextArea.d.ts"
+      ],
+      "@react95/core/TitleBar": [
+        "./node_modules/@react95/core/dist/types/TitleBar/TitleBar.d.ts"
+      ]
+    }
+  },
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules"
   ]
 }

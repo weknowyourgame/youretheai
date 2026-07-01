@@ -1,11 +1,13 @@
+"use client";
+
 import { useEffect } from "react";
 import { Button } from "@react95/core/Button";
 import { Frame } from "@react95/core/Frame";
 import { ProgressBar } from "@react95/core/ProgressBar";
 import { TextArea } from "@react95/core/TextArea";
 import { TitleBar } from "@react95/core/TitleBar";
-import { getActiveRules, levels } from "./game/levels";
-import { useGameStore } from "./store/game-store";
+import { getActiveRules, levels } from "../_lib/game/levels";
+import { useGameStore } from "../_lib/store/game-store";
 
 function App() {
   const {
