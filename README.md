@@ -8,7 +8,6 @@ The game uses stacked visible rules, trap prompts, deterministic guardrails, and
 
 ```bash
 npm install
-npm run dev:server
 npm run dev
 ```
 
@@ -31,7 +30,8 @@ CLOUDFLARE_API_TOKEN=
 ## Scripts
 
 ```bash
-npm run dev         # Vite client
+npm run dev         # API server + Vite client
+npm run dev:client  # Vite client only
 npm run dev:server  # Express API on :8787
 npm run build       # TypeScript + production client build
 npm test            # Vitest guardrail tests

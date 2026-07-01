@@ -6,7 +6,27 @@ export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
-      "/api": "http://localhost:8787",
+      "/api": {
+        target: "http://127.0.0.1:8787",
+        changeOrigin: true,
+        configure(proxy) {
+          proxy.on("error", (_error, _request, response) => {
+            if (!response.headersSent) {
+              response.writeHead(503, {
+                "Content-Type": "application/json",
+              });
+            }
+
+            response.end(
+              JSON.stringify({
+                error: "api_unavailable",
+                message:
+                  "Prompt Panic API is not running. Start it with npm run dev.",
+              }),
+            );
+          });
+        },
+      },
     },
   },
   resolve: {
