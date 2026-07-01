@@ -12,10 +12,12 @@ import { useGameStore } from "../_lib/store/game-store";
 function App() {
   const {
     attempts,
-    generateTrap,
-    isGeneratingTrap,
+    beginLevel,
+    conversation,
+    isGeneratingUser,
     isJudging,
     lastResult,
+    lastFallbackReason,
     levelIndex,
     nextLevel,
     reply,
@@ -25,8 +27,9 @@ function App() {
     setReply,
     status,
     submitReply,
+    survivedTurns,
     trapAttackType,
-    trapPrompt,
+    turnsRequired,
   } = useGameStore();
   const level = levels[levelIndex];
   const activeRules = getActiveRules(level.levelNumber);
@@ -41,11 +44,14 @@ function App() {
       .map((result) => result.ruleId) ?? [],
   );
   const canSubmit =
-    reply.trim().length > 0 && status === "playing" && !isJudging;
+    reply.trim().length > 0 &&
+    status === "playing" &&
+    !isJudging &&
+    !isGeneratingUser;
 
   useEffect(() => {
-    void generateTrap();
-  }, [generateTrap, levelIndex]);
+    void beginLevel();
+  }, [beginLevel, levelIndex]);
 
   return (
     <main className="desktop">
@@ -91,15 +97,41 @@ function App() {
           <Frame className="panel chat-panel" boxShadow="$in" bgColor="white">
             <div className="level-strip">
               <strong>Level {level.levelNumber}</strong>
-              <span>{trapAttackType.replaceAll("_", " ")}</span>
+              <span>
+                {isGeneratingUser
+                  ? "loading user"
+                  : trapAttackType.replaceAll("_", " ")}
+              </span>
             </div>
-            <div className="chat-line user-line">
-              <strong>User:</strong>{" "}
-              {isGeneratingTrap ? "Generating trap prompt..." : trapPrompt}
+            <div className="turn-progress" aria-label="Level survival progress">
+              Survived {survivedTurns}/{turnsRequired} replies
             </div>
+            <div className="chat-transcript" aria-live="polite">
+              {conversation.map((message, index) => (
+                <div
+                  className={`chat-line ${
+                    message.role === "user" ? "user-line" : "assistant-line"
+                  }`}
+                  key={`${message.role}-${index}-${message.content}`}
+                >
+                  <strong>{message.role === "user" ? "User" : "Assistant"}:</strong>{" "}
+                  {message.content}
+                </div>
+              ))}
+              {isGeneratingUser ? (
+                <div className="chat-line user-line">
+                  <strong>User:</strong> Thinking of a new trap...
+                </div>
+              ) : null}
+            </div>
+            {lastFallbackReason ? (
+              <div className="fallback-note">
+                judged offline — {lastFallbackReason}
+              </div>
+            ) : null}
             <div className="chat-line assistant-line">
-              <strong>Assistant:</strong>{" "}
-              {lastResult?.verdict ?? "Draft a careful reply below."}
+              <strong>Judge:</strong>{" "}
+              {lastResult?.verdict ?? "Survive the conversation without breaking a rule."}
             </div>
             {lastResult ? (
               <div className="verdict-list">
@@ -150,12 +182,13 @@ function App() {
           <TextArea
             rows={4}
             value={reply}
-            disabled={isJudging}
+            disabled={isJudging || isGeneratingUser}
+            placeholder="Write your assistant reply here..."
             onChange={(event) => setReply(event.currentTarget.value)}
           />
           <div className="composer-actions">
             <Button disabled={!canSubmit} onClick={submitReply}>
-              {isJudging ? "Judging..." : "Run Reply"}
+              {isJudging ? "Judging..." : "Send Reply"}
             </Button>
             {status === "failed" ? <Button onClick={retryLevel}>Retry</Button> : null}
             {status === "passed" ? <Button onClick={nextLevel}>Next</Button> : null}

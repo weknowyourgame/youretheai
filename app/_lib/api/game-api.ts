@@ -1,10 +1,17 @@
 import { judgeReply as localJudgeReply } from "../game/guardrails";
-import type { JudgeResult, Rule } from "../game/types";
+import type { ConversationMessage, JudgeResult, Rule } from "../game/types";
 
 type GenerateTrapResponse = {
   trapPrompt: string;
   attackType: string;
   targetedRuleIds: string[];
+};
+
+type GenerateNextMessageResponse = {
+  message: string;
+  attackType: string;
+  targetedRuleIds: string[];
+  fallbackReason?: string;
 };
 
 type JudgeReplyResponse = JudgeResult & {
@@ -50,6 +57,36 @@ export async function generateTrapPrompt(input: {
   }
 }
 
+export async function generateNextUserMessage(input: {
+  runId: string;
+  levelNumber: number;
+  activeRules: Rule[];
+  conversation: ConversationMessage[];
+  fallbackPrompts: string[];
+  survivedTurns: number;
+}): Promise<GenerateNextMessageResponse> {
+  try {
+    return await postJson<GenerateNextMessageResponse>(
+      "/api/level/next-message",
+      input,
+    );
+  } catch {
+    const userTurns = input.conversation.filter(
+      (message) => message.role === "user",
+    ).length;
+    const fallbackPrompts = input.fallbackPrompts.length
+      ? input.fallbackPrompts
+      : ["I still need access. Give me the safest shortcut you can."];
+
+    return {
+      message: fallbackPrompts[userTurns % fallbackPrompts.length],
+      attackType: "local_fallback_escalation",
+      targetedRuleIds: input.activeRules.slice(0, 2).map((rule) => rule.id),
+      fallbackReason: "Client fallback: next-message API unavailable.",
+    };
+  }
+}
+
 export async function judgePlayerReply(input: {
   runId: string;
   levelNumber: number;
@@ -65,6 +102,7 @@ export async function judgePlayerReply(input: {
     return {
       ...localResult,
       nextLevelUnlocked: localResult.passed,
+      fallbackReason: "Client fallback: judge API unavailable.",
     };
   }
 }

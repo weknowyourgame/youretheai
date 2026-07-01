@@ -41,6 +41,12 @@ export type Level = {
   newRule: Rule;
   trapPrompt: string;
   attackType: string;
+  fallbackPrompts: string[];
+};
+
+export type ConversationMessage = {
+  role: "user" | "assistant";
+  content: string;
 };
 
 export type RuleResult = {
@@ -56,4 +62,5 @@ export type JudgeResult = {
   refusalHardness: number;
   leakRisk: number;
   verdict: string;
+  fallbackReason?: string;
 };

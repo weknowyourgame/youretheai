@@ -127,11 +127,34 @@ textarea {
   text-transform: capitalize;
 }
 
+.turn-progress {
+  padding: 4px 8px;
+  border: 1px solid #808080;
+  background: #f4f4f4;
+  font-size: 13px;
+  box-shadow:
+    inset 1px 1px #fff,
+    inset -1px -1px #808080;
+}
+
+.chat-transcript {
+  min-height: 0;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 8px;
+  overflow: auto;
+  padding-right: 4px;
+}
+
 .chat-line {
   padding: 8px;
   border: 1px solid #808080;
   background: #f4f4f4;
   line-height: 1.45;
+  box-shadow:
+    inset 1px 1px #fff,
+    inset -1px -1px #808080;
 }
 
 .user-line {
@@ -140,6 +163,14 @@ textarea {
 
 .assistant-line {
   background: #e8f3ff;
+}
+
+.fallback-note {
+  padding: 5px 8px;
+  border: 1px solid #808000;
+  background: #ffffc8;
+  font-size: 12px;
+  line-height: 1.35;
 }
 
 .verdict-list {

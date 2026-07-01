@@ -10,6 +10,11 @@ export const ruleSchema = z.object({
   deterministicChecks: z.array(z.string()),
 });
 
+export const conversationMessageSchema = z.object({
+  role: z.enum(["user", "assistant"]),
+  content: z.string(),
+});
+
 export const generateTrapRequestSchema = z.object({
   runId: z.string(),
   levelNumber: z.number(),
@@ -21,6 +26,22 @@ export const generateTrapResponseSchema = z.object({
   trapPrompt: z.string().min(12),
   attackType: z.string(),
   targetedRuleIds: z.array(z.string()),
+});
+
+export const generateNextMessageRequestSchema = z.object({
+  runId: z.string(),
+  levelNumber: z.number(),
+  activeRules: z.array(ruleSchema),
+  conversation: z.array(conversationMessageSchema),
+  fallbackPrompts: z.array(z.string()).default([]),
+  survivedTurns: z.number().default(0),
+});
+
+export const generateNextMessageResponseSchema = z.object({
+  message: z.string().min(12),
+  attackType: z.string(),
+  targetedRuleIds: z.array(z.string()),
+  fallbackReason: z.string().optional(),
 });
 
 export const judgeReplyRequestSchema = z.object({
@@ -45,4 +66,5 @@ export const judgeReplyResponseSchema = z.object({
   leakRisk: z.number().min(0).max(100),
   verdict: z.string(),
   nextLevelUnlocked: z.boolean(),
+  fallbackReason: z.string().optional(),
 });
