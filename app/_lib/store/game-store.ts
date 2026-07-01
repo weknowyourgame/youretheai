@@ -1,5 +1,9 @@
 import { create } from "zustand";
-import { generateNextUserMessage, judgePlayerReply } from "../api/game-api";
+import {
+  generateNextUserMessage,
+  judgePlayerReply,
+  syncRun,
+} from "../api/game-api";
 import { getActiveRules, getTurnsRequired, levels } from "../game/levels";
 import { scoreAttempt } from "../game/scoring";
 import type { ConversationMessage, JudgeResult } from "../game/types";
@@ -7,6 +11,7 @@ import type { ConversationMessage, JudgeResult } from "../game/types";
 type GameStatus = "playing" | "passed" | "failed" | "won";
 
 type GameState = {
+  runId: string;
   levelIndex: number;
   reply: string;
   conversation: ConversationMessage[];
@@ -28,10 +33,15 @@ type GameState = {
   restartRun: () => void;
 };
 
+function newRunId() {
+  return crypto.randomUUID();
+}
+
 function initialState() {
   const level = levels[0];
 
   return {
+    runId: newRunId(),
     levelIndex: 0,
     reply: "",
     conversation: [{ role: "user" as const, content: level.trapPrompt }],
@@ -90,11 +100,13 @@ export const useGameStore = create<GameState>((set, get) => ({
     set({ isJudging: true });
 
     const result = await judgePlayerReply({
-      runId: "local-run",
+      runId: state.runId,
       levelNumber,
       activeRules,
       trapPrompt: latestUserMessage(state.conversation) ?? level.trapPrompt,
       playerReply: assistantMessage.content,
+      attemptNumber: nextAttempt,
+      turnIndex: state.survivedTurns,
     });
     const nextScore = Math.max(
       0,
@@ -106,16 +118,28 @@ export const useGameStore = create<GameState>((set, get) => ({
       result.passed && nextSurvivedTurns >= state.turnsRequired;
 
     if (!result.passed || levelComplete) {
+      const nextStatus: GameStatus = result.passed
+        ? isFinalLevel
+          ? "won"
+          : "passed"
+        : "failed";
+
       set({
         attempts: nextAttempt,
         conversation: conversationWithReply,
         score: nextScore,
-        status: result.passed ? (isFinalLevel ? "won" : "passed") : "failed",
+        status: nextStatus,
         survivedTurns: result.passed ? nextSurvivedTurns : state.survivedTurns,
         lastResult: result,
         lastFallbackReason: result.fallbackReason ?? null,
         isJudging: false,
         reply: "",
+      });
+      void syncRun({
+        runId: state.runId,
+        status: nextStatus,
+        currentLevel: levelNumber,
+        score: nextScore,
       });
       return;
     }
@@ -131,14 +155,21 @@ export const useGameStore = create<GameState>((set, get) => ({
       isGeneratingUser: true,
       reply: "",
     });
+    void syncRun({
+      runId: state.runId,
+      status: "playing",
+      currentLevel: levelNumber,
+      score: nextScore,
+    });
 
     const nextMessage = await generateNextUserMessage({
-      runId: "local-run",
+      runId: state.runId,
       levelNumber,
       activeRules,
       conversation: conversationWithReply,
       fallbackPrompts: level.fallbackPrompts,
       survivedTurns: nextSurvivedTurns,
+      attemptNumber: nextAttempt,
     });
 
     set({
@@ -151,38 +182,49 @@ export const useGameStore = create<GameState>((set, get) => ({
       lastFallbackReason: nextMessage.fallbackReason ?? null,
     });
   },
-  retryLevel: () =>
-    set((state) => ({
-      conversation: [
-        {
-          role: "user",
-          content: levels[state.levelIndex].trapPrompt,
-        },
-      ],
+  retryLevel: () => {
+    const state = get();
+    const level = levels[state.levelIndex];
+
+    set({
+      conversation: [{ role: "user", content: level.trapPrompt }],
       attempts: 0,
       survivedTurns: 0,
       reply: "",
       status: "playing",
       lastResult: null,
       lastFallbackReason: null,
-    })),
-  nextLevel: () =>
-    set((state) => {
-      const nextLevelIndex = Math.min(state.levelIndex + 1, levels.length - 1);
-      const nextLevel = levels[nextLevelIndex];
+    });
+    void syncRun({
+      runId: state.runId,
+      status: "playing",
+      currentLevel: level.levelNumber,
+      score: state.score,
+    });
+  },
+  nextLevel: () => {
+    const state = get();
+    const nextLevelIndex = Math.min(state.levelIndex + 1, levels.length - 1);
+    const nextLevel = levels[nextLevelIndex];
 
-      return {
-        levelIndex: nextLevelIndex,
-        reply: "",
-        conversation: [{ role: "user", content: nextLevel.trapPrompt }],
-        trapAttackType: nextLevel.attackType,
-        attempts: 0,
-        survivedTurns: 0,
-        turnsRequired: getTurnsRequired(nextLevel.levelNumber),
-        status: "playing",
-        lastResult: null,
-        lastFallbackReason: null,
-      };
-    }),
+    set({
+      levelIndex: nextLevelIndex,
+      reply: "",
+      conversation: [{ role: "user", content: nextLevel.trapPrompt }],
+      trapAttackType: nextLevel.attackType,
+      attempts: 0,
+      survivedTurns: 0,
+      turnsRequired: getTurnsRequired(nextLevel.levelNumber),
+      status: "playing",
+      lastResult: null,
+      lastFallbackReason: null,
+    });
+    void syncRun({
+      runId: state.runId,
+      status: "playing",
+      currentLevel: nextLevel.levelNumber,
+      score: state.score,
+    });
+  },
   restartRun: () => set(initialState()),
 }));

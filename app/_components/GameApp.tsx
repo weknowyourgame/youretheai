@@ -1,5 +1,6 @@
 "use client";
 
+import FingerprintJS from "@fingerprintjs/fingerprintjs";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Alert } from "@react95/core/Alert";
 import { Button } from "@react95/core/Button";
@@ -12,6 +13,7 @@ import { TaskBar } from "@react95/core/TaskBar";
 import { TextArea } from "@react95/core/TextArea";
 import { TitleBar } from "@react95/core/TitleBar";
 import { Tooltip } from "@react95/core/Tooltip";
+import { identifyVisitor } from "../_lib/api/game-api";
 import { getActiveRules, levels } from "../_lib/game/levels";
 import type { Rule } from "../_lib/game/types";
 import { useGameStore } from "../_lib/store/game-store";
@@ -146,12 +148,20 @@ function App() {
     if (hasCountedVisitRef.current) return;
     hasCountedVisitRef.current = true;
 
-    fetch("/api/visitors", { method: "POST" })
-      .then((response) => response.json())
-      .then((data: { count?: number }) => {
-        if (typeof data.count === "number") setVisitorCount(data.count);
+    FingerprintJS.load()
+      .then((fp) => fp.get())
+      .then((result) => identifyVisitor(result.visitorId))
+      .catch(() => {
+        // Fingerprinting failure is silent - gameplay continues without visitor identity.
       })
-      .catch(() => setVisitorCount(null));
+      .finally(() => {
+        fetch("/api/visitors", { method: "POST" })
+          .then((response) => response.json())
+          .then((data: { count?: number }) => {
+            if (typeof data.count === "number") setVisitorCount(data.count);
+          })
+          .catch(() => setVisitorCount(null));
+      });
   }, []);
 
   useEffect(() => {

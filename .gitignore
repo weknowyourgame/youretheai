@@ -9,3 +9,4 @@ coverage/
 graphify-out/
 plan*
 .data/
+generated/
