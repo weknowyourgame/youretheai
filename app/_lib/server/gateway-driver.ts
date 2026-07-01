@@ -9,6 +9,7 @@ type GatewayRequest = {
   profileId: ModelProfileId;
   messages: ChatMessage[];
   temperature?: number;
+  timeoutMs?: number;
 };
 
 type GatewayResponse = {
@@ -53,6 +54,7 @@ export async function generateText({
   messages,
   profileId,
   temperature = 0.4,
+  timeoutMs = Number(process.env.LLM_TIMEOUT_MS ?? "6000"),
 }: GatewayRequest): Promise<GatewayResponse> {
   const profile = modelProfiles[profileId];
   const target = resolveGatewayTarget();
@@ -70,6 +72,7 @@ export async function generateText({
     method: "POST",
     headers: target.headers,
     body: JSON.stringify(body),
+    signal: AbortSignal.timeout(timeoutMs),
   });
 
   if (!response.ok) {
