@@ -21,7 +21,7 @@ type GameState = {
   lastFallbackReason: string | null;
   lastResult: JudgeResult | null;
   setReply: (reply: string) => void;
-  beginLevel: () => Promise<void>;
+  beginLevel: () => void;
   submitReply: () => Promise<void>;
   retryLevel: () => void;
   nextLevel: () => void;
@@ -59,33 +59,20 @@ function latestUserMessage(conversation: ConversationMessage[]) {
 export const useGameStore = create<GameState>((set, get) => ({
   ...initialState(),
   setReply: (reply) => set({ reply }),
-  beginLevel: async () => {
+  beginLevel: () => {
     const state = get();
     const level = levels[state.levelIndex];
-    const activeRules = getActiveRules(level.levelNumber);
 
     set({
-      conversation: [],
-      isGeneratingUser: true,
+      conversation: [{ role: "user", content: level.trapPrompt }],
+      trapAttackType: level.attackType,
+      turnsRequired: getTurnsRequired(level.levelNumber),
+      isGeneratingUser: false,
+      isJudging: false,
       lastFallbackReason: null,
+      lastResult: null,
       reply: "",
       status: "playing",
-    });
-
-    const nextMessage = await generateNextUserMessage({
-      runId: "local-run",
-      levelNumber: level.levelNumber,
-      activeRules,
-      conversation: [],
-      fallbackPrompts: [level.trapPrompt, ...level.fallbackPrompts],
-      survivedTurns: 0,
-    });
-
-    set({
-      conversation: [{ role: "user", content: nextMessage.message }],
-      trapAttackType: nextMessage.attackType,
-      isGeneratingUser: false,
-      lastFallbackReason: nextMessage.fallbackReason ?? null,
     });
   },
   submitReply: async () => {
