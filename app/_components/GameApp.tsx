@@ -50,7 +50,7 @@ function App() {
   return (
     <main className="desktop">
       <Frame className="app-window" bgColor="$material" boxShadow="$out">
-        <TitleBar active title="AI Assistant Console - Prompt Panic 95">
+        <TitleBar active title="AI Assistant Console - You're the AI">
           <TitleBar.OptionsBox>
             <TitleBar.Minimize />
             <TitleBar.Maximize />

@@ -27,7 +27,7 @@ export function resolveGatewayTarget() {
 
   if (!gatewayBase) {
     throw new Error(
-      "AI_GATEWAY_URL is not configured. Prompt Panic only calls OpenRouter through Cloudflare AI Gateway.",
+      "AI_GATEWAY_URL is not configured. You're the AI only calls OpenRouter through Cloudflare AI Gateway.",
     );
   }
 
@@ -36,7 +36,7 @@ export function resolveGatewayTarget() {
     Authorization: `Bearer ${openRouterKey}`,
     "Content-Type": "application/json",
     "HTTP-Referer": process.env.OPENROUTER_REFERER ?? "http://localhost:3000",
-    "X-OpenRouter-Title": process.env.OPENROUTER_TITLE ?? "Prompt Panic 95",
+    "X-OpenRouter-Title": process.env.OPENROUTER_TITLE ?? "You're the AI",
   };
 
   if (cloudflareToken) {

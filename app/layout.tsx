@@ -4,9 +4,9 @@ import "../node_modules/@react95/core/dist/esm/themes/win95.css.ts.vanilla.css";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Prompt Panic 95",
+  title: "You're the AI",
   description:
-    "A Windows 95-style prompt-defense game about staying helpful without leaking fictional private data.",
+    "A reverse Turing test: stay helpful, harmless, and honest while a user tries to break you.",
 };
 
 export default function RootLayout({

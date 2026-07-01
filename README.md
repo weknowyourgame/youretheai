@@ -1,6 +1,6 @@
-# Prompt Panic 95
+# You're the AI
 
-A Windows 95-style prompt-defense game where you play as an AI assistant trying to stay helpful while refusing to leak fictional private data.
+A reverse Turing test: a Windows 95-style prompt-defense game where you play as an AI assistant trying to stay helpful while refusing to leak fictional private data.
 
 The game uses stacked visible rules, trap prompts, deterministic guardrails, and LLM judging through OpenRouter routed through Cloudflare AI Gateway. It is built as a single Next.js app, with the game UI and API routes deployed together.
 
