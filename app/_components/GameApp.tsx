@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Alert } from "@react95/core/Alert";
 import { Button } from "@react95/core/Button";
 import { Frame } from "@react95/core/Frame";
@@ -40,6 +40,10 @@ function ruleTooltip(rule: Rule) {
     .join(" ");
 }
 
+function metricLabel(value: number | undefined) {
+  return typeof value === "number" ? `${value}%` : "Pending";
+}
+
 function App() {
   const {
     attempts,
@@ -74,6 +78,7 @@ function App() {
   const [showCloseConfirm, setShowCloseConfirm] = useState(false);
   const [dismissedAlertKey, setDismissedAlertKey] = useState("");
   const [currentTime, setCurrentTime] = useState(new Date());
+  const startedLevelRef = useRef<number | null>(null);
   const level = levels[levelIndex];
   const activeRules = getActiveRules(level.levelNumber);
   const failedRules = new Set(
@@ -91,8 +96,11 @@ function App() {
     status === "playing" &&
     !isJudging &&
     !isGeneratingUser;
+  const hasJudgement = Boolean(lastResult);
 
   useEffect(() => {
+    if (startedLevelRef.current === levelIndex) return;
+    startedLevelRef.current = levelIndex;
     void beginLevel();
   }, [beginLevel, levelIndex]);
 
@@ -128,6 +136,19 @@ function App() {
     setShowIntro(false);
   }
 
+  function startNewRun() {
+    setActiveMenu(null);
+    restartRun();
+
+    if (levelIndex === 0) {
+      startedLevelRef.current = 0;
+      void beginLevel();
+      return;
+    }
+
+    startedLevelRef.current = null;
+  }
+
   async function openDiagnostics() {
     setActiveMenu(null);
     setShowDiagnostics(true);
@@ -147,7 +168,7 @@ function App() {
 
   function closeWindow() {
     setShowCloseConfirm(false);
-    restartRun();
+    startNewRun();
     setIsMinimized(false);
   }
 
@@ -181,7 +202,7 @@ function App() {
                 {activeMenu === "file" ? (
                   <ul className="menu-list win95-list">
                     <li>
-                      <button type="button" onClick={restartRun}>
+                      <button type="button" onClick={startNewRun}>
                         New Run
                       </button>
                     </li>
@@ -235,10 +256,20 @@ function App() {
                   : passedRules.has(rule.id)
                     ? "status-green"
                     : "status-gray";
+                const stateLabel = failedRules.has(rule.id)
+                  ? "failed"
+                  : passedRules.has(rule.id)
+                    ? "passed"
+                    : "pending";
 
                 return (
                   <li key={rule.id}>
-                    <span className={`status-dot ${stateClass}`} />
+                    <span
+                      aria-label={`${rule.title} ${stateLabel}`}
+                      className={`status-dot ${stateClass}`}
+                      role="img"
+                      title={stateLabel}
+                    />
                     <Tooltip delay={350} text={ruleTooltip(rule)}>
                       <span>
                         <strong>{rule.title}:</strong> {rule.visibleText}
@@ -313,16 +344,25 @@ function App() {
               <span>Attempts</span>
               <strong>{attempts}</strong>
             </div>
-            <label>
-              Leak Risk
+            <label className={hasJudgement ? "metric" : "metric metric-pending"}>
+              <span className="metric-heading">
+                <span>Leak Risk</span>
+                <strong>{metricLabel(lastResult?.leakRisk)}</strong>
+              </span>
               <ProgressBar width="100%" percent={lastResult?.leakRisk ?? 0} />
             </label>
-            <label>
-              Helpfulness
+            <label className={hasJudgement ? "metric" : "metric metric-pending"}>
+              <span className="metric-heading">
+                <span>Helpfulness</span>
+                <strong>{metricLabel(lastResult?.helpfulness)}</strong>
+              </span>
               <ProgressBar width="100%" percent={lastResult?.helpfulness ?? 0} />
             </label>
-            <label>
-              Refusal Hardness
+            <label className={hasJudgement ? "metric" : "metric metric-pending"}>
+              <span className="metric-heading">
+                <span>Refusal Hardness</span>
+                <strong>{metricLabel(lastResult?.refusalHardness)}</strong>
+              </span>
               <ProgressBar
                 width="100%"
                 percent={lastResult?.refusalHardness ?? 0}
@@ -382,7 +422,7 @@ function App() {
             </li>
             <li className="menu-divider" />
             <li>
-              <button type="button" onClick={restartRun}>
+              <button type="button" onClick={startNewRun}>
                 Restart Run
               </button>
             </li>
