@@ -26,6 +26,31 @@ const nextConfig: NextConfig = {
         __dirname,
         "node_modules/@react95/core/dist/esm/TitleBar/TitleBar.mjs",
       ),
+      "@react95/core/Modal": resolve(
+        __dirname,
+        "node_modules/@react95/core/dist/esm/Modal/Modal.mjs",
+      ),
+      "@react95/core/Alert": resolve(
+        __dirname,
+        "node_modules/@react95/core/dist/esm/Alert/Alert.mjs",
+      ),
+      "@react95/core/Tooltip": resolve(
+        __dirname,
+        "node_modules/@react95/core/dist/esm/Tooltip/Tooltip.mjs",
+      ),
+      "@react95/core/List": resolve(
+        __dirname,
+        "node_modules/@react95/core/dist/esm/List/List.mjs",
+      ),
+      "@react95/core/TaskBar": resolve(
+        __dirname,
+        "node_modules/@react95/core/dist/esm/TaskBar/TaskBar.mjs",
+      ),
+      "@react95/core/Cursor": resolve(
+        __dirname,
+        "node_modules/@react95/core/dist/esm/Cursor/Cursor.css.mjs",
+      ),
+      "@react95/icons": resolve(__dirname, "app/_lib/react95-icons.tsx"),
     };
 
     return config;

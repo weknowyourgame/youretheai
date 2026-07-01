@@ -37,6 +37,27 @@
       ],
       "@react95/core/TitleBar": [
         "./node_modules/@react95/core/dist/types/TitleBar/TitleBar.d.ts"
+      ],
+      "@react95/core/Modal": [
+        "./node_modules/@react95/core/dist/types/Modal/Modal.d.ts"
+      ],
+      "@react95/core/Alert": [
+        "./node_modules/@react95/core/dist/types/Alert/Alert.d.ts"
+      ],
+      "@react95/core/Tooltip": [
+        "./node_modules/@react95/core/dist/types/Tooltip/Tooltip.d.ts"
+      ],
+      "@react95/core/List": [
+        "./node_modules/@react95/core/dist/types/List/List.d.ts"
+      ],
+      "@react95/core/TaskBar": [
+        "./node_modules/@react95/core/dist/types/TaskBar/TaskBar.d.ts"
+      ],
+      "@react95/core/Cursor": [
+        "./node_modules/@react95/core/dist/types/Cursor/Cursor.css.d.ts"
+      ],
+      "@react95/icons": [
+        "./app/_lib/react95-icons.tsx"
       ]
     }
   },
