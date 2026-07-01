@@ -3,9 +3,13 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Alert } from "@react95/core/Alert";
 import { Button } from "@react95/core/Button";
+import { Cursor } from "@react95/core/Cursor";
+import { Dropdown } from "@react95/core/Dropdown";
 import { Frame } from "@react95/core/Frame";
+import { List } from "@react95/core/List";
 import { Modal } from "@react95/core/Modal";
 import { ProgressBar } from "@react95/core/ProgressBar";
+import { TaskBar } from "@react95/core/TaskBar";
 import { TextArea } from "@react95/core/TextArea";
 import { TitleBar } from "@react95/core/TitleBar";
 import { Tooltip } from "@react95/core/Tooltip";
@@ -14,6 +18,7 @@ import type { Rule } from "../_lib/game/types";
 import { useGameStore } from "../_lib/store/game-store";
 
 const INTRO_STORAGE_KEY = "localStor_intro";
+const visitorDigits = "00042069".split("");
 
 const checkDescriptions: Record<string, string> = {
   noSecretLeak: "Looks for exact or normalized fictional secret strings.",
@@ -77,7 +82,7 @@ function App() {
   const [isMaximized, setIsMaximized] = useState(false);
   const [showCloseConfirm, setShowCloseConfirm] = useState(false);
   const [dismissedAlertKey, setDismissedAlertKey] = useState("");
-  const [currentTime, setCurrentTime] = useState(new Date());
+  const [soundEnabled, setSoundEnabled] = useState(false);
   const startedLevelRef = useRef<number | null>(null);
   const level = levels[levelIndex];
   const activeRules = getActiveRules(level.levelNumber);
@@ -114,12 +119,6 @@ function App() {
     if (status === "playing") setDismissedAlertKey("");
   }, [status]);
 
-  useEffect(() => {
-    const timer = window.setInterval(() => setCurrentTime(new Date()), 1000);
-
-    return () => window.clearInterval(timer);
-  }, []);
-
   const statusAlertKey = `${status}-${levelIndex}-${attempts}`;
   const showStatusAlert =
     ["failed", "passed", "won"].includes(status) &&
@@ -130,6 +129,47 @@ function App() {
     if (status === "won") return "Run complete. You survived the full rule stack.";
     return `Level ${level.levelNumber} cleared. Previous rules stay active.`;
   }, [lastResult?.verdict, level.levelNumber, status]);
+
+  function playDialUpSting() {
+    const audioWindow = window as Window & {
+      webkitAudioContext?: typeof AudioContext;
+    };
+    const AudioContextConstructor =
+      window.AudioContext ?? audioWindow.webkitAudioContext;
+
+    if (!AudioContextConstructor) return;
+
+    const context = new AudioContextConstructor();
+    const master = context.createGain();
+    const notes = [520, 780, 1170, 620, 930, 440, 1320];
+
+    master.gain.setValueAtTime(0.035, context.currentTime);
+    master.connect(context.destination);
+
+    notes.forEach((frequency, index) => {
+      const oscillator = context.createOscillator();
+      const gain = context.createGain();
+      const start = context.currentTime + index * 0.09;
+
+      oscillator.type = index % 2 === 0 ? "square" : "sine";
+      oscillator.frequency.setValueAtTime(frequency, start);
+      gain.gain.setValueAtTime(0.001, start);
+      gain.gain.linearRampToValueAtTime(0.07, start + 0.015);
+      gain.gain.exponentialRampToValueAtTime(0.001, start + 0.13);
+      oscillator.connect(gain).connect(master);
+      oscillator.start(start);
+      oscillator.stop(start + 0.14);
+    });
+
+    window.setTimeout(() => void context.close(), 900);
+  }
+
+  function toggleDialUpSting() {
+    const nextSoundEnabled = !soundEnabled;
+    setSoundEnabled(nextSoundEnabled);
+
+    if (nextSoundEnabled) playDialUpSting();
+  }
 
   function closeIntro() {
     window.localStorage.setItem(INTRO_STORAGE_KEY, "seen");
@@ -173,7 +213,23 @@ function App() {
   }
 
   return (
-    <main className="desktop">
+    <main className={`desktop ${Cursor.Auto}`}>
+      <div className="geocities-page">
+        <div className="geocities-topper" aria-label="Y2K web shell">
+          <div className="chrome-logo">
+            <span className="sparkle">*</span>
+            YOU'RE THE AI
+            <span className="sparkle">*</span>
+          </div>
+          <div className="marquee" aria-label="Alert ticker">
+            <span>
+              *** new rules stack forever *** do not paste the password ***
+              guestbook is open *** best viewed at 800x600 ***
+            </span>
+          </div>
+          <div className="blink-chip">HOT!</div>
+        </div>
+
       <Frame
         className={`app-window ${isMinimized ? "app-window-minimized" : ""} ${
           isMaximized ? "app-window-maximized" : ""
@@ -194,31 +250,30 @@ function App() {
             <div className="menu-bar">
               <div className="menu-root">
                 <button
+                  className={Cursor.Pointer}
                   type="button"
                   onClick={() => setActiveMenu(activeMenu === "file" ? null : "file")}
                 >
                   File
                 </button>
                 {activeMenu === "file" ? (
-                  <ul className="menu-list win95-list">
-                    <li>
-                      <button type="button" onClick={startNewRun}>
+                  <List className="menu-list">
+                    <List.Item onClick={startNewRun}>
+                      <button className={Cursor.Pointer} type="button">
                         New Run
                       </button>
-                    </li>
-                    <li>
-                      <button
-                        type="button"
-                        onClick={() => setShowCloseConfirm(true)}
-                      >
+                    </List.Item>
+                    <List.Item onClick={() => setShowCloseConfirm(true)}>
+                      <button className={Cursor.Pointer} type="button">
                         Close
                       </button>
-                    </li>
-                  </ul>
+                    </List.Item>
+                  </List>
                 ) : null}
               </div>
               <div className="menu-root">
                 <button
+                  className={Cursor.Pointer}
                   type="button"
                   onClick={() => {
                     setActiveMenu(null);
@@ -229,12 +284,13 @@ function App() {
                 </button>
               </div>
               <div className="menu-root">
-                <button type="button" onClick={openDiagnostics}>
+                <button className={Cursor.Pointer} type="button" onClick={openDiagnostics}>
                   Diagnostics
                 </button>
               </div>
               <div className="menu-root">
                 <button
+                  className={Cursor.Pointer}
                   type="button"
                   onClick={() => {
                     setActiveMenu(null);
@@ -344,6 +400,16 @@ function App() {
               <span>Attempts</span>
               <strong>{attempts}</strong>
             </div>
+            <label className="web-zone">
+              <span>Web Zone</span>
+              <Dropdown
+                aria-label="Decorative web zone selector"
+                className={Cursor.Pointer}
+                onChange={() => undefined}
+                options={["Cloudflare Gateway", "OpenRouter Free", "GeoCities"]}
+                value="Cloudflare Gateway"
+              />
+            </label>
             <label className={hasJudgement ? "metric" : "metric metric-pending"}>
               <span className="metric-heading">
                 <span>Leak Risk</span>
@@ -369,13 +435,16 @@ function App() {
               />
             </label>
             <div className={`status-banner status-${status}`}>
-              {isJudging ? "JUDGING" : status.toUpperCase()}
+              <span className="blink-word">
+                {isJudging ? "JUDGING" : status.toUpperCase()}
+              </span>
             </div>
           </Frame>
         </div>
 
         <Frame className="composer" bgColor="$material" boxShadow="$in">
           <TextArea
+            className={Cursor.Text}
             rows={4}
             value={reply}
             disabled={isJudging || isGeneratingUser}
@@ -383,61 +452,88 @@ function App() {
             onChange={(event) => setReply(event.currentTarget.value)}
           />
           <div className="composer-actions">
-            <Button disabled={!canSubmit} onClick={submitReply}>
+            <Button className={Cursor.Pointer} disabled={!canSubmit} onClick={submitReply}>
               {isJudging ? "Judging..." : "Send Reply"}
             </Button>
-            {status === "failed" ? <Button onClick={retryLevel}>Retry</Button> : null}
-            {status === "passed" ? <Button onClick={nextLevel}>Next</Button> : null}
-            {status === "won" ? <Button onClick={restartRun}>Restart</Button> : null}
+            {status === "failed" ? (
+              <Button className={Cursor.Pointer} onClick={retryLevel}>
+                Retry
+              </Button>
+            ) : null}
+            {status === "passed" ? (
+              <Button className={Cursor.Pointer} onClick={nextLevel}>
+                Next
+              </Button>
+            ) : null}
+            {status === "won" ? (
+              <Button className={Cursor.Pointer} onClick={restartRun}>
+                Restart
+              </Button>
+            ) : null}
           </div>
         </Frame>
           </>
         ) : null}
       </Frame>
-      <div className="taskbar">
+
+      <footer className="guestbook-footer" aria-label="Y2K footer">
+        <div className="y2k-badges">
+          <span className="y2k-badge under-construction">
+            <span className="badge-icon">!</span>
+            UNDER CONSTRUCTION
+          </span>
+          <span className="y2k-badge netscape-badge">BEST VIEWED IN NETSCAPE</span>
+        </div>
+        <div className="webring">
+          AI Safety WebRing: &lt;&lt; prev | random | next &gt;&gt;
+        </div>
+        <div className="counter-row">
+          Visitors:
+          <span className="visitor-counter" aria-label="Fake visitor counter">
+            {visitorDigits.map((digit, index) => (
+              <span key={`${index}-${digit}`}>{digit}</span>
+            ))}
+          </span>
+        </div>
         <button
-          className="start-button"
+          aria-pressed={soundEnabled}
+          className={`dialup-toggle ${soundEnabled ? "sound-on" : ""}`}
+          onClick={toggleDialUpSting}
           type="button"
-          onClick={() => setActiveMenu(activeMenu === "help" ? null : "help")}
         >
-          <span className="start-glyph">[]</span>
-          Start
+          56k sting: {soundEnabled ? "ON" : "OFF"}
         </button>
-        {activeMenu === "help" ? (
-          <ul className="start-menu win95-list">
-            <li>
-              <button type="button" onClick={() => setShowIntro(true)}>
+      </footer>
+      </div>
+
+      <TaskBar
+        className={`y2k-taskbar ${Cursor.Auto}`}
+        list={
+          <List className="start-menu">
+            <List.Item onClick={() => setShowIntro(true)}>
+              <button className={Cursor.Pointer} type="button">
                 Tip of the Day
               </button>
-            </li>
-            <li>
-              <button type="button" onClick={() => setShowRules(true)}>
+            </List.Item>
+            <List.Item onClick={() => setShowRules(true)}>
+              <button className={Cursor.Pointer} type="button">
                 All Rules
               </button>
-            </li>
-            <li>
-              <button type="button" onClick={openDiagnostics}>
+            </List.Item>
+            <List.Item onClick={openDiagnostics}>
+              <button className={Cursor.Pointer} type="button">
                 Diagnostics
               </button>
-            </li>
-            <li className="menu-divider" />
-            <li>
-              <button type="button" onClick={startNewRun}>
+            </List.Item>
+            <List.Divider />
+            <List.Item onClick={startNewRun}>
+              <button className={Cursor.Pointer} type="button">
                 Restart Run
               </button>
-            </li>
-          </ul>
-        ) : null}
-        <button className="taskbar-window" type="button">
-          You're the AI
-        </button>
-        <div className="taskbar-clock">
-          {currentTime.toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-          })}
-        </div>
-      </div>
+            </List.Item>
+          </List>
+        }
+      />
       {showIntro ? (
         <Modal
           title="Welcome to You're the AI"

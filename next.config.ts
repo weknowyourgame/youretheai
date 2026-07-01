@@ -38,6 +38,10 @@ const nextConfig: NextConfig = {
         __dirname,
         "node_modules/@react95/core/dist/esm/Tooltip/Tooltip.mjs",
       ),
+      "@react95/core/Dropdown": resolve(
+        __dirname,
+        "node_modules/@react95/core/dist/esm/Dropdown/Dropdown.mjs",
+      ),
       "@react95/core/List": resolve(
         __dirname,
         "node_modules/@react95/core/dist/esm/List/List.mjs",
@@ -50,6 +54,10 @@ const nextConfig: NextConfig = {
         __dirname,
         "node_modules/@react95/core/dist/esm/Cursor/Cursor.css.mjs",
       ),
+      [resolve(
+        __dirname,
+        "node_modules/@react95/core/dist/esm/List/List.css.mjs",
+      )]: resolve(__dirname, "app/_lib/react95-list-css.ts"),
       "@react95/icons": resolve(__dirname, "app/_lib/react95-icons.tsx"),
     };
 

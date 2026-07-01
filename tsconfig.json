@@ -47,6 +47,9 @@
       "@react95/core/Tooltip": [
         "./node_modules/@react95/core/dist/types/Tooltip/Tooltip.d.ts"
       ],
+      "@react95/core/Dropdown": [
+        "./node_modules/@react95/core/dist/types/Dropdown/Dropdown.d.ts"
+      ],
       "@react95/core/List": [
         "./node_modules/@react95/core/dist/types/List/List.d.ts"
       ],
