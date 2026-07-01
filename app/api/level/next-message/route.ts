@@ -25,14 +25,14 @@ export async function POST(request: Request) {
   const input = generateNextMessageRequestSchema.parse(await request.json());
   const visitorId = await getVisitorId();
 
-  function persistAdversaryTurn(responseBody: {
+  async function persistAdversaryTurn(responseBody: {
     message: string;
     attackType: string;
     targetedRuleIds: string[];
   }) {
     if (!visitorId) return;
 
-    void recordTurn({
+    await recordTurn({
       runId: input.runId,
       visitorId,
       levelNumber: input.levelNumber,
@@ -54,7 +54,7 @@ export async function POST(request: Request) {
     const parsed = generateNextMessageResponseSchema.parse(
       parseJsonObject(generated.text),
     );
-    persistAdversaryTurn(parsed);
+    await persistAdversaryTurn(parsed);
     return NextResponse.json(parsed);
   } catch (error) {
     const fallbackPrompts = input.fallbackPrompts.length
@@ -71,7 +71,7 @@ export async function POST(request: Request) {
       targetedRuleIds: input.activeRules.slice(0, 2).map((rule) => rule.id),
       fallbackReason: error instanceof Error ? error.message : "Unknown error",
     };
-    persistAdversaryTurn(responseBody);
+    await persistAdversaryTurn(responseBody);
     return NextResponse.json(responseBody);
   }
 }

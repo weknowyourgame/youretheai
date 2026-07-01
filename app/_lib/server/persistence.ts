@@ -1,5 +1,27 @@
-import type { Prisma } from "../../../generated/prisma/client";
+import type { Prisma, RunStatus } from "../../../generated/prisma/client";
 import { prisma } from "./db";
+
+// "won" is the only truly terminal state a run can reach - once set, an
+// out-of-order request must never be allowed to revert it. Every other
+// status ("playing"/"passed"/"failed") legitimately recurs during normal
+// play (e.g. retrying a failed level goes back to "playing"), so those are
+// not guarded here.
+function resolveRunStatus(
+  existingStatus: RunStatus | undefined,
+  incomingStatus: RunStatus,
+): RunStatus {
+  if (existingStatus === "won") return "won";
+  return incomingStatus;
+}
+
+// currentLevel must never move backward within a run - a stale, out-of-order
+// write should not un-advance a player's progress.
+function resolveCurrentLevel(
+  existingLevel: number | undefined,
+  incomingLevel: number,
+): number {
+  return Math.max(existingLevel ?? 0, incomingLevel);
+}
 
 export async function upsertVisitor(fingerprint: string, userAgent?: string) {
   try {
@@ -47,15 +69,24 @@ type RecordTurnInput = {
 
 export async function recordTurn(input: RecordTurnInput) {
   try {
+    const existing = await prisma.run.findUnique({
+      where: { id: input.runId },
+      select: { currentLevel: true },
+    });
+    const currentLevel = resolveCurrentLevel(
+      existing?.currentLevel,
+      input.levelNumber,
+    );
+
     await prisma.$transaction([
       prisma.run.upsert({
         where: { id: input.runId },
         create: {
           id: input.runId,
           visitorId: input.visitorId,
-          currentLevel: input.levelNumber,
+          currentLevel,
         },
-        update: { currentLevel: input.levelNumber },
+        update: { currentLevel },
       }),
       prisma.turn.create({
         data: {
@@ -90,25 +121,35 @@ export async function recordTurn(input: RecordTurnInput) {
 type SyncRunInput = {
   runId: string;
   visitorId: string;
-  status: string;
+  status: RunStatus;
   currentLevel: number;
   score: number;
 };
 
 export async function syncRun(input: SyncRunInput) {
   try {
+    const existing = await prisma.run.findUnique({
+      where: { id: input.runId },
+      select: { status: true, currentLevel: true },
+    });
+    const status = resolveRunStatus(existing?.status, input.status);
+    const currentLevel = resolveCurrentLevel(
+      existing?.currentLevel,
+      input.currentLevel,
+    );
+
     await prisma.run.upsert({
       where: { id: input.runId },
       create: {
         id: input.runId,
         visitorId: input.visitorId,
-        status: input.status,
-        currentLevel: input.currentLevel,
+        status,
+        currentLevel,
         score: input.score,
       },
       update: {
-        status: input.status,
-        currentLevel: input.currentLevel,
+        status,
+        currentLevel,
         score: input.score,
       },
     });

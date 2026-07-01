@@ -12,6 +12,7 @@ export async function setVisitorId(visitorId: string) {
   const store = await cookies();
   store.set(COOKIE_NAME, visitorId, {
     httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/",
     maxAge: ONE_YEAR_SECONDS,

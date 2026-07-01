@@ -12,6 +12,13 @@ enum TurnRole {
   assistant
 }
 
+enum RunStatus {
+  playing
+  passed
+  failed
+  won
+}
+
 model Visitor {
   id          String   @id @default(cuid())
   fingerprint String   @unique
@@ -19,19 +26,17 @@ model Visitor {
   firstSeenAt DateTime @default(now())
   lastSeenAt  DateTime @updatedAt
   runs        Run[]
-
-  @@index([fingerprint])
 }
 
 model Run {
-  id           String   @id
-  visitor      Visitor  @relation(fields: [visitorId], references: [id])
+  id           String    @id
+  visitor      Visitor   @relation(fields: [visitorId], references: [id])
   visitorId    String
-  status       String   @default("playing")
-  currentLevel Int      @default(1)
-  score        Int      @default(0)
-  startedAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  status       RunStatus @default(playing)
+  currentLevel Int       @default(1)
+  score        Int       @default(0)
+  startedAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
   turns        Turn[]
 
   @@index([visitorId])

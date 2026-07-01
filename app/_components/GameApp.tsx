@@ -1,6 +1,5 @@
 "use client";
 
-import FingerprintJS from "@fingerprintjs/fingerprintjs";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Alert } from "@react95/core/Alert";
 import { Button } from "@react95/core/Button";
@@ -148,7 +147,8 @@ function App() {
     if (hasCountedVisitRef.current) return;
     hasCountedVisitRef.current = true;
 
-    FingerprintJS.load()
+    import("@fingerprintjs/fingerprintjs")
+      .then((mod) => mod.default.load())
       .then((fp) => fp.get())
       .then((result) => identifyVisitor(result.visitorId))
       .catch(() => {

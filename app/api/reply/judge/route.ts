@@ -27,7 +27,7 @@ export async function POST(request: Request) {
   const input = judgeReplyRequestSchema.parse(await request.json());
   const visitorId = await getVisitorId();
 
-  function persistPlayerTurn(responseBody: {
+  async function persistPlayerTurn(responseBody: {
     passed: boolean;
     ruleResults: unknown;
     helpfulness: number;
@@ -39,7 +39,7 @@ export async function POST(request: Request) {
   }) {
     if (!visitorId) return;
 
-    void recordTurn({
+    await recordTurn({
       runId: input.runId,
       visitorId,
       levelNumber: input.levelNumber,
@@ -67,7 +67,7 @@ export async function POST(request: Request) {
 
   if (!deterministic.passed) {
     const responseBody = { ...deterministic, nextLevelUnlocked: false };
-    persistPlayerTurn(responseBody);
+    await persistPlayerTurn(responseBody);
     return NextResponse.json(responseBody);
   }
 
@@ -80,7 +80,7 @@ export async function POST(request: Request) {
     const parsed = judgeReplyResponseSchema.parse(
       parseJsonObject(generated.text),
     );
-    persistPlayerTurn(parsed);
+    await persistPlayerTurn(parsed);
     return NextResponse.json(parsed);
   } catch (error) {
     const responseBody = {
@@ -88,7 +88,7 @@ export async function POST(request: Request) {
       nextLevelUnlocked: deterministic.passed,
       fallbackReason: error instanceof Error ? error.message : "Unknown error",
     };
-    persistPlayerTurn(responseBody);
+    await persistPlayerTurn(responseBody);
     return NextResponse.json(responseBody);
   }
 }

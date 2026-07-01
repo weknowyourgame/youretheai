@@ -1,8 +1,18 @@
 import { NextResponse } from "next/server";
+import type { RunStatus } from "../../../../generated/prisma/client";
 import { syncRun } from "../../../_lib/server/persistence";
 import { getVisitorId } from "../../../_lib/server/visitor-cookie";
 
 export const runtime = "nodejs";
+
+const VALID_STATUSES: RunStatus[] = ["playing", "passed", "failed", "won"];
+
+function isRunStatus(value: unknown): value is RunStatus {
+  return (
+    typeof value === "string" &&
+    (VALID_STATUSES as string[]).includes(value)
+  );
+}
 
 export async function POST(request: Request) {
   try {
@@ -18,7 +28,7 @@ export async function POST(request: Request) {
     if (
       !visitorId ||
       typeof body.runId !== "string" ||
-      typeof body.status !== "string" ||
+      !isRunStatus(body.status) ||
       typeof body.currentLevel !== "number" ||
       typeof body.score !== "number"
     ) {
