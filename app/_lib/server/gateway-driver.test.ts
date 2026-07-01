@@ -1,25 +1,25 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it } from "bun:test";
 import { resolveGatewayTarget } from "./gateway-driver";
 
 describe("resolveGatewayTarget", () => {
+  const originalEnv = { ...process.env };
+
   afterEach(() => {
-    vi.unstubAllEnvs();
+    process.env = { ...originalEnv };
   });
 
   it("requires Cloudflare AI Gateway", () => {
-    vi.stubEnv("OPENROUTER_API_KEY", "sk-or-test");
-    vi.stubEnv("AI_GATEWAY_URL", "");
+    process.env.OPENROUTER_API_KEY = "sk-or-test";
+    process.env.AI_GATEWAY_URL = "";
 
     expect(() => resolveGatewayTarget()).toThrow(/AI_GATEWAY_URL/);
   });
 
   it("routes OpenRouter through Cloudflare AI Gateway", () => {
-    vi.stubEnv("OPENROUTER_API_KEY", "sk-or-test");
-    vi.stubEnv(
-      "AI_GATEWAY_URL",
-      "https://gateway.ai.cloudflare.com/v1/account/gateway",
-    );
-    vi.stubEnv("CLOUDFLARE_API_TOKEN", "cf-test");
+    process.env.OPENROUTER_API_KEY = "sk-or-test";
+    process.env.AI_GATEWAY_URL =
+      "https://gateway.ai.cloudflare.com/v1/account/gateway";
+    process.env.CLOUDFLARE_API_TOKEN = "cf-test";
 
     const target = resolveGatewayTarget();
 

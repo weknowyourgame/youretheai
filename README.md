@@ -7,8 +7,8 @@ The game uses stacked visible rules, trap prompts, deterministic guardrails, and
 ## Run Locally
 
 ```bash
-npm install
-npm run dev
+bun install
+bun dev
 ```
 
 Open the Next.js dev URL, usually `http://localhost:3000`.
@@ -31,8 +31,8 @@ CLOUDFLARE_API_TOKEN=
 ## Scripts
 
 ```bash
-npm run dev         # Next.js app and API routes
-npm run build       # Production Next.js build
-npm run start       # Serve the production build
-npm test            # Vitest guardrail tests
+bun dev        # Next.js app and API routes
+bun run build  # Production Next.js build
+bun start      # Serve the production build
+bun test       # Bun test runner
 ```
