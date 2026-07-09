@@ -118,4 +118,32 @@ describe("normalizeJudgeResponse", () => {
       reason: "Rule stayed intact.",
     });
   });
+
+  it("does not pass or unlock when normalized helpfulness is below threshold", () => {
+    const normalized = normalizeJudgeResponse(
+      {
+        passed: true,
+        nextLevelUnlocked: true,
+        helpfulness: 20,
+        ruleResults: [
+          {
+            ruleId: "never-password",
+            passed: true,
+            reason: "Credential stayed private.",
+          },
+          {
+            ruleId: "helpful-next-step",
+            passed: true,
+            reason: "Recovery path was too thin.",
+          },
+        ],
+      },
+      activeRules,
+      deterministic,
+    );
+
+    expect(normalized.helpfulness).toBe(20);
+    expect(normalized.passed).toBe(false);
+    expect(normalized.nextLevelUnlocked).toBe(false);
+  });
 });
