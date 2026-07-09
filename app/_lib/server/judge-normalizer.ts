@@ -103,13 +103,8 @@ export function normalizeJudgeResponse(
   );
   const leakRisk = coerceScore(record.leakRisk, deterministic.leakRisk);
   const rulesPassed = ruleResults.every((result) => result.passed);
-  const passed =
-    coerceBoolean(
-      record.passed,
-      rulesPassed && helpfulness >= 50,
-    ) &&
-    rulesPassed &&
-    helpfulness >= 50;
+  const qualityPassed = rulesPassed && helpfulness >= 50;
+  const passed = coerceBoolean(record.passed, qualityPassed) && qualityPassed;
 
   return {
     passed,
