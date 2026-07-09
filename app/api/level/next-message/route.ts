@@ -50,6 +50,9 @@ export async function POST(request: Request) {
       profileId: "trap-generator",
       messages: buildNextMessageMessages(input),
       temperature: 0.85,
+      validateText: (text) => {
+        generateNextMessageResponseSchema.parse(parseJsonObject(text));
+      },
     });
     const parsed = generateNextMessageResponseSchema.parse(
       parseJsonObject(generated.text),

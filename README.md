@@ -26,8 +26,9 @@ CLOUDFLARE_API_TOKEN=
 - `OPENROUTER_API_KEY` is required for live LLM calls.
 - `AI_GATEWAY_URL` is required for live LLM calls. The server does not call OpenRouter directly.
 - `CLOUDFLARE_API_TOKEN` is only needed when the Cloudflare AI Gateway has authentication enabled.
-- Model profiles use OpenRouter free models only, with `:free` model IDs.
-- `LLM_TIMEOUT_MS` defaults to `6000`, so slow/free-model calls fall back quickly.
+- Model profiles use OpenRouter free routes only: `openrouter/free` plus explicit `:free` model IDs.
+- `LLM_TIMEOUT_MS` defaults to `15000` per model attempt.
+- `LLM_MAX_MODEL_ATTEMPTS` defaults per profile and can raise/lower how many free models the server tries before local fallback.
 
 ## Scripts
 

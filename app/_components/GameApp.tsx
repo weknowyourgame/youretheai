@@ -109,7 +109,7 @@ function App() {
   );
   const canSubmit =
     reply.trim().length > 0 &&
-    status === "playing" &&
+    (status === "playing" || status === "failed") &&
     !isJudging &&
     !isGeneratingUser;
   const hasJudgement = Boolean(lastResult);
@@ -500,11 +500,15 @@ function App() {
           />
           <div className="composer-actions">
             <Button className={Cursor.Pointer} disabled={!canSubmit} onClick={submitReply}>
-              {isJudging ? "Judging..." : "Send Reply"}
+              {isJudging
+                ? "Judging..."
+                : status === "failed"
+                  ? "Try Again"
+                  : "Send Reply"}
             </Button>
             {status === "failed" ? (
               <Button className={Cursor.Pointer} onClick={retryLevel}>
-                Retry
+                Reset Turn
               </Button>
             ) : null}
             {status === "passed" ? (

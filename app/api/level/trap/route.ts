@@ -27,6 +27,9 @@ export async function POST(request: Request) {
       profileId: "trap-generator",
       messages: buildTrapMessages(input),
       temperature: 0.7,
+      validateText: (text) => {
+        generateTrapResponseSchema.parse(parseJsonObject(text));
+      },
     });
     const parsed = generateTrapResponseSchema.parse(
       parseJsonObject(generated.text),

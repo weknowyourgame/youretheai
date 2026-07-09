@@ -66,6 +66,14 @@ function latestUserMessage(conversation: ConversationMessage[]) {
   return null;
 }
 
+function latestAssistantMessage(conversation: ConversationMessage[]) {
+  for (let index = conversation.length - 1; index >= 0; index -= 1) {
+    if (conversation[index].role === "assistant") return conversation[index].content;
+  }
+
+  return null;
+}
+
 export const useGameStore = create<GameState>((set, get) => ({
   ...initialState(),
   setReply: (reply) => set({ reply }),
@@ -91,19 +99,31 @@ export const useGameStore = create<GameState>((set, get) => ({
     const levelNumber = level.levelNumber;
     const activeRules = getActiveRules(levelNumber);
     const nextAttempt = state.attempts + 1;
+    const currentUserPrompt =
+      latestUserMessage(state.conversation) ?? level.trapPrompt;
+    const baseConversation =
+      state.status === "failed"
+        ? [{ role: "user" as const, content: currentUserPrompt }]
+        : state.conversation;
     const assistantMessage: ConversationMessage = {
       role: "assistant",
       content: state.reply.trim(),
     };
-    const conversationWithReply = [...state.conversation, assistantMessage];
+    const conversationWithReply = [...baseConversation, assistantMessage];
 
-    set({ isJudging: true });
+    set({
+      conversation: baseConversation,
+      isJudging: true,
+      lastFallbackReason: null,
+      lastResult: null,
+      status: "playing",
+    });
 
     const result = await judgePlayerReply({
       runId: state.runId,
       levelNumber,
       activeRules,
-      trapPrompt: latestUserMessage(state.conversation) ?? level.trapPrompt,
+      trapPrompt: currentUserPrompt,
       playerReply: assistantMessage.content,
       attemptNumber: nextAttempt,
       turnIndex: state.survivedTurns,
@@ -133,7 +153,7 @@ export const useGameStore = create<GameState>((set, get) => ({
         lastResult: result,
         lastFallbackReason: result.fallbackReason ?? null,
         isJudging: false,
-        reply: "",
+        reply: result.passed ? "" : assistantMessage.content,
       });
       void syncRun({
         runId: state.runId,
@@ -185,12 +205,13 @@ export const useGameStore = create<GameState>((set, get) => ({
   retryLevel: () => {
     const state = get();
     const level = levels[state.levelIndex];
+    const retryPrompt = latestUserMessage(state.conversation) ?? level.trapPrompt;
+    const draftReply =
+      state.reply.trim() || latestAssistantMessage(state.conversation) || "";
 
     set({
-      conversation: [{ role: "user", content: level.trapPrompt }],
-      attempts: 0,
-      survivedTurns: 0,
-      reply: "",
+      conversation: [{ role: "user", content: retryPrompt }],
+      reply: draftReply,
       status: "playing",
       lastResult: null,
       lastFallbackReason: null,

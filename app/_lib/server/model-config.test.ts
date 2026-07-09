@@ -1,13 +1,15 @@
 import { describe, expect, it } from "bun:test";
-import { modelProfiles } from "./model-config";
+import { getModelCandidates, isFreeModelId, modelProfiles } from "./model-config";
 
 describe("modelProfiles", () => {
   it("uses only OpenRouter free model ids", () => {
-    for (const profile of Object.values(modelProfiles)) {
-      expect(profile.primary.endsWith(":free")).toBe(true);
+    for (const profileId of Object.keys(modelProfiles)) {
+      const candidates = getModelCandidates(
+        profileId as keyof typeof modelProfiles,
+      );
 
-      for (const fallback of profile.fallbacks ?? []) {
-        expect(fallback.endsWith(":free")).toBe(true);
+      for (const modelId of candidates) {
+        expect(isFreeModelId(modelId)).toBe(true);
       }
     }
   });
