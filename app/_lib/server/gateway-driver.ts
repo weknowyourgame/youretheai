@@ -14,7 +14,7 @@ type GatewayRequest = {
   messages: ChatMessage[];
   temperature?: number;
   timeoutMs?: number;
-  validateText?: (text: string, model: string) => void;
+  validateText?: (text: string, model: string) => void | Promise<void>;
 };
 
 type GatewayResponse = {
@@ -162,7 +162,7 @@ export async function generateText({
       }
 
       try {
-        validateText?.(text, data.model ?? model);
+        await validateText?.(text, data.model ?? model);
       } catch (error) {
         failures.push({
           model: data.model ?? model,

@@ -32,7 +32,7 @@ export const modelProfiles: Record<ModelProfileId, ModelProfile> = {
       "meta-llama/llama-3.3-70b-instruct:free",
       "qwen/qwen3-coder:free",
     ],
-    maxAttempts: 8,
+    maxAttempts: 9,
   },
   judge: {
     primary: "openrouter/free",
@@ -47,7 +47,7 @@ export const modelProfiles: Record<ModelProfileId, ModelProfile> = {
       "meta-llama/llama-3.3-70b-instruct:free",
       "qwen/qwen3-coder:free",
     ],
-    maxAttempts: 9,
+    maxAttempts: 10,
   },
   "cheap-classifier": {
     primary: "openrouter/free",
