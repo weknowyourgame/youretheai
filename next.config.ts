@@ -3,6 +3,7 @@ import { resolve } from "node:path";
 
 const nextConfig: NextConfig = {
   outputFileTracingRoot: __dirname,
+  serverExternalPackages: ["@prisma/adapter-pg", "pg"],
   webpack(config) {
     config.resolve.alias = {
       ...config.resolve.alias,

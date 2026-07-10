@@ -26,14 +26,34 @@ CLOUDFLARE_API_TOKEN=
 - `OPENROUTER_API_KEY` is required for live LLM calls.
 - `AI_GATEWAY_URL` is required for live LLM calls. The server does not call OpenRouter directly.
 - `CLOUDFLARE_API_TOKEN` is only needed when the Cloudflare AI Gateway has authentication enabled.
-- Model profiles use OpenRouter free models only, with `:free` model IDs.
-- `LLM_TIMEOUT_MS` defaults to `6000`, so slow/free-model calls fall back quickly.
+- Model profiles use OpenRouter free routes only: `openrouter/free` plus explicit `:free` model IDs.
+- `LLM_TIMEOUT_MS` defaults to `15000` per model attempt.
+- `LLM_MAX_MODEL_ATTEMPTS` defaults per profile and can raise/lower how many free models the server tries before local fallback.
 
 ## Scripts
 
 ```bash
-bun dev        # Next.js app and API routes
-bun run build  # Production Next.js build
-bun start      # Serve the production build
-bun test       # Bun test runner
+bun dev                        # Next.js app and API routes
+bun run build                  # Production Next.js build
+bun start                      # Serve the production build
+bun test                       # Bun test runner
+bun run prisma:generate        # Regenerate Prisma Client
+bun run prisma:migrate:deploy  # Apply committed migrations
+bun run prisma:seed            # Seed a small sample game run
+bun run prisma:verify          # Verify a live database read
+```
+
+## Prisma Postgres
+
+The server-side Prisma singleton lives in `lib/prisma.ts` and uses the
+`@prisma/adapter-pg` driver. Game persistence stores visitors, runs, and turns
+in the linked Prisma Postgres database. Keep `DATABASE_URL` in `.env`; it is
+ignored by Git and must never be imported into client components.
+
+After changing `prisma/schema.prisma`, create a development migration and
+regenerate the client:
+
+```bash
+bunx --bun prisma migrate dev --name describe_your_change
+bun run prisma:generate
 ```

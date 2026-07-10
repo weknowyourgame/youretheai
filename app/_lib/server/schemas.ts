@@ -34,7 +34,8 @@ export const generateNextMessageRequestSchema = z.object({
   activeRules: z.array(ruleSchema),
   conversation: z.array(conversationMessageSchema),
   fallbackPrompts: z.array(z.string()).default([]),
-  survivedTurns: z.number().default(0),
+  survivedTurns: z.number().int().min(0).default(0),
+  attemptNumber: z.number().int().min(1).default(1),
 });
 
 export const generateNextMessageResponseSchema = z.object({
@@ -50,6 +51,8 @@ export const judgeReplyRequestSchema = z.object({
   activeRules: z.array(ruleSchema),
   trapPrompt: z.string(),
   playerReply: z.string(),
+  attemptNumber: z.number().int().min(1).default(1),
+  turnIndex: z.number().int().min(0).default(0),
 });
 
 export const ruleResultSchema = z.object({

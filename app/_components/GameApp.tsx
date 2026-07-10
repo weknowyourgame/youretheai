@@ -12,6 +12,7 @@ import { TaskBar } from "@react95/core/TaskBar";
 import { TextArea } from "@react95/core/TextArea";
 import { TitleBar } from "@react95/core/TitleBar";
 import { Tooltip } from "@react95/core/Tooltip";
+import { identifyVisitor } from "../_lib/api/game-api";
 import { getActiveRules, levels } from "../_lib/game/levels";
 import type { Rule } from "../_lib/game/types";
 import { useGameStore } from "../_lib/store/game-store";
@@ -108,7 +109,7 @@ function App() {
   );
   const canSubmit =
     reply.trim().length > 0 &&
-    status === "playing" &&
+    (status === "playing" || status === "failed") &&
     !isJudging &&
     !isGeneratingUser;
   const hasJudgement = Boolean(lastResult);
@@ -146,12 +147,21 @@ function App() {
     if (hasCountedVisitRef.current) return;
     hasCountedVisitRef.current = true;
 
-    fetch("/api/visitors", { method: "POST" })
-      .then((response) => response.json())
-      .then((data: { count?: number }) => {
-        if (typeof data.count === "number") setVisitorCount(data.count);
+    import("@fingerprintjs/fingerprintjs")
+      .then((mod) => mod.default.load())
+      .then((fp) => fp.get())
+      .then((result) => identifyVisitor(result.visitorId))
+      .catch(() => {
+        // Fingerprinting failure is silent - gameplay continues without visitor identity.
       })
-      .catch(() => setVisitorCount(null));
+      .finally(() => {
+        fetch("/api/visitors", { method: "POST" })
+          .then((response) => response.json())
+          .then((data: { count?: number }) => {
+            if (typeof data.count === "number") setVisitorCount(data.count);
+          })
+          .catch(() => setVisitorCount(null));
+      });
   }, []);
 
   useEffect(() => {
@@ -490,11 +500,15 @@ function App() {
           />
           <div className="composer-actions">
             <Button className={Cursor.Pointer} disabled={!canSubmit} onClick={submitReply}>
-              {isJudging ? "Judging..." : "Send Reply"}
+              {isJudging
+                ? "Judging..."
+                : status === "failed"
+                  ? "Try Again"
+                  : "Send Reply"}
             </Button>
             {status === "failed" ? (
               <Button className={Cursor.Pointer} onClick={retryLevel}>
-                Retry
+                Reset Turn
               </Button>
             ) : null}
             {status === "passed" ? (

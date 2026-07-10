@@ -64,6 +64,7 @@ export async function generateNextUserMessage(input: {
   conversation: ConversationMessage[];
   fallbackPrompts: string[];
   survivedTurns: number;
+  attemptNumber: number;
 }): Promise<GenerateNextMessageResponse> {
   try {
     return await postJson<GenerateNextMessageResponse>(
@@ -93,6 +94,8 @@ export async function judgePlayerReply(input: {
   activeRules: Rule[];
   trapPrompt: string;
   playerReply: string;
+  attemptNumber: number;
+  turnIndex: number;
 }): Promise<JudgeReplyResponse> {
   try {
     return await postJson<JudgeReplyResponse>("/api/reply/judge", input);
@@ -104,5 +107,34 @@ export async function judgePlayerReply(input: {
       nextLevelUnlocked: localResult.passed,
       fallbackReason: "Client fallback: judge API unavailable.",
     };
+  }
+}
+
+export async function identifyVisitor(fingerprint: string): Promise<void> {
+  try {
+    await fetch("/api/visitor/identify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ fingerprint }),
+    });
+  } catch {
+    // Best-effort only - gameplay never depends on visitor identification.
+  }
+}
+
+export async function syncRun(input: {
+  runId: string;
+  status: string;
+  currentLevel: number;
+  score: number;
+}): Promise<void> {
+  try {
+    await fetch("/api/run/sync", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(input),
+    });
+  } catch {
+    // Best-effort only - gameplay never depends on run sync succeeding.
   }
 }

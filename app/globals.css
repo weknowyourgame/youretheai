@@ -12,6 +12,7 @@
 
 body {
   min-width: 320px;
+  height: 100vh;
   min-height: 100vh;
   margin: 0;
   cursor: default;
@@ -38,6 +39,8 @@ textarea {
 }
 
 .desktop {
+  box-sizing: border-box;
+  height: 100vh;
   min-height: 100vh;
   padding: 14px 18px 42px;
   background:
@@ -66,10 +69,12 @@ textarea {
 
 .geocities-page {
   width: min(1240px, 100%);
-  min-height: calc(100vh - 60px);
+  height: 100%;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   gap: 8px;
+  overflow: hidden;
 }
 
 .geocities-topper,
@@ -152,10 +157,12 @@ textarea {
 
 .app-window {
   width: min(1180px, 100%);
-  min-height: min(720px, calc(100vh - 190px));
+  min-height: 0;
+  flex: 1 1 auto;
   display: flex;
   flex-direction: column;
   margin: 0 auto;
+  overflow: hidden;
   filter:
     drop-shadow(0 18px 30px rgba(0, 0, 0, 0.68))
     drop-shadow(0 0 10px rgba(114, 215, 232, 0.14));
@@ -163,7 +170,7 @@ textarea {
 
 .app-window-maximized {
   width: 100%;
-  min-height: calc(100vh - 60px);
+  min-height: 0;
 }
 
 .app-window-minimized {
@@ -247,10 +254,11 @@ textarea {
 
 .shell-grid {
   min-height: 0;
-  flex: 1;
+  flex: 1 1 auto;
   display: grid;
   grid-template-columns: minmax(210px, 260px) minmax(0, 1fr) minmax(210px, 250px);
   gap: 8px;
+  overflow: hidden;
   padding: 8px;
 }
 
@@ -322,6 +330,7 @@ textarea {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  overflow: hidden;
 }
 
 .level-strip {
@@ -348,7 +357,7 @@ textarea {
 .chat-transcript {
   min-height: 0;
   display: flex;
-  flex: 1;
+  flex: 1 1 auto;
   flex-direction: column;
   gap: 8px;
   overflow: auto;
@@ -468,6 +477,7 @@ textarea {
 }
 
 .composer {
+  flex: 0 0 auto;
   display: grid;
   grid-template-columns: minmax(0, 1fr) 128px;
   gap: 8px;
@@ -638,12 +648,19 @@ textarea {
   }
 
   .desktop {
+    height: auto;
     min-height: auto;
     padding: 8px 8px 42px;
   }
 
+  .geocities-page {
+    height: auto;
+    overflow: visible;
+  }
+
   .app-window {
-    min-height: auto;
+    min-height: min(720px, calc(100vh - 110px));
+    overflow: hidden;
   }
 
   .geocities-topper,
@@ -653,6 +670,7 @@ textarea {
 
   .shell-grid {
     grid-template-columns: 1fr;
+    overflow: visible;
   }
 
   .composer {
