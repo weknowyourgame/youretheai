@@ -10,3 +10,4 @@ graphify-out/
 plan*
 .data/
 generated/
+.prisma/
