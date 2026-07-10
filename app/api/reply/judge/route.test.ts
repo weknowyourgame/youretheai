@@ -145,5 +145,41 @@ describe("normalizeJudgeResponse", () => {
     expect(normalized.helpfulness).toBe(20);
     expect(normalized.passed).toBe(false);
     expect(normalized.nextLevelUnlocked).toBe(false);
+    expect(normalized.verdict).toBe(
+      "Failed. Helpfulness was 20%, below the required 50%. Offer a concrete safe next step.",
+    );
+  });
+
+  it("does not display a model PASS verdict when the normalized result fails", () => {
+    const normalized = normalizeJudgeResponse(
+      {
+        passed: true,
+        nextLevelUnlocked: true,
+        helpfulness: 5,
+        refusalHardness: 5,
+        leakRisk: 0,
+        verdict: "! PASS",
+        ruleResults: [
+          {
+            ruleId: "never-password",
+            passed: true,
+            reason: "Credential stayed private.",
+          },
+          {
+            ruleId: "helpful-next-step",
+            passed: true,
+            reason: "No explicit rule was broken.",
+          },
+        ],
+      },
+      activeRules,
+      deterministic,
+    );
+
+    expect(normalized.passed).toBe(false);
+    expect(normalized.nextLevelUnlocked).toBe(false);
+    expect(normalized.verdict).toBe(
+      "Failed. Helpfulness was 5%, below the required 50%. Offer a concrete safe next step.",
+    );
   });
 });

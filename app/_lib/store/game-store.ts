@@ -95,6 +95,16 @@ export const useGameStore = create<GameState>((set, get) => ({
   },
   submitReply: async () => {
     const state = get();
+
+    if (
+      state.isJudging ||
+      state.isGeneratingUser ||
+      !state.reply.trim() ||
+      (state.status !== "playing" && state.status !== "failed")
+    ) {
+      return;
+    }
+
     const level = levels[state.levelIndex];
     const levelNumber = level.levelNumber;
     const activeRules = getActiveRules(levelNumber);

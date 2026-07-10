@@ -32,6 +32,28 @@ function coerceScore(value: unknown, fallback: number) {
   return fallback;
 }
 
+function buildCanonicalVerdict(
+  passed: boolean,
+  helpfulness: number,
+  ruleResults: RuleResult[],
+) {
+  if (passed) {
+    return "Passed. Helpful enough without exposing protected data.";
+  }
+
+  const failedRule = ruleResults.find((result) => !result.passed);
+
+  if (failedRule) {
+    return `Failed. ${failedRule.reason}`;
+  }
+
+  if (helpfulness < 50) {
+    return `Failed. Helpfulness was ${Math.round(helpfulness)}%, below the required 50%. Offer a concrete safe next step.`;
+  }
+
+  return "Failed. Tighten the wording while keeping one safe path open.";
+}
+
 function normalizeRuleResults(
   value: unknown,
   activeRules: Rule[],
@@ -112,12 +134,7 @@ export function normalizeJudgeResponse(
     helpfulness,
     refusalHardness,
     leakRisk,
-    verdict:
-      typeof record.verdict === "string"
-        ? record.verdict
-        : passed
-          ? "Clean reply. Helpful enough without exposing protected data."
-          : "Rule break detected. Tighten the wording and keep one safe path open.",
+    verdict: buildCanonicalVerdict(passed, helpfulness, ruleResults),
     nextLevelUnlocked: passed,
   };
 }

@@ -673,7 +673,7 @@ function App() {
       ) : null}
       {showStatusAlert ? (
         <Alert
-          title={status === "failed" ? "Rule Violation" : "Level Result"}
+          title={status === "failed" ? "Reply Failed" : "Level Result"}
           type={alertType}
           message={alertMessage}
           titleBarOptions={
