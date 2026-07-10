@@ -33,8 +33,27 @@ CLOUDFLARE_API_TOKEN=
 ## Scripts
 
 ```bash
-bun dev        # Next.js app and API routes
-bun run build  # Production Next.js build
-bun start      # Serve the production build
-bun test       # Bun test runner
+bun dev                        # Next.js app and API routes
+bun run build                  # Production Next.js build
+bun start                      # Serve the production build
+bun test                       # Bun test runner
+bun run prisma:generate        # Regenerate Prisma Client
+bun run prisma:migrate:deploy  # Apply committed migrations
+bun run prisma:seed            # Seed a small sample game run
+bun run prisma:verify          # Verify a live database read
+```
+
+## Prisma Postgres
+
+The server-side Prisma singleton lives in `lib/prisma.ts` and uses the
+`@prisma/adapter-pg` driver. Game persistence stores visitors, runs, and turns
+in the linked Prisma Postgres database. Keep `DATABASE_URL` in `.env`; it is
+ignored by Git and must never be imported into client components.
+
+After changing `prisma/schema.prisma`, create a development migration and
+regenerate the client:
+
+```bash
+bunx --bun prisma migrate dev --name describe_your_change
+bun run prisma:generate
 ```

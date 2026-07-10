@@ -43,19 +43,19 @@ model Run {
 }
 
 model Turn {
-  id                String   @id @default(cuid())
-  run               Run      @relation(fields: [runId], references: [id])
-  runId             String
-  levelNumber       Int
-  attemptNumber     Int      @default(1)
-  turnIndex         Int
-  role              TurnRole
-  content           String   @db.Text
-  createdAt         DateTime @default(now())
+  id            String   @id @default(cuid())
+  run           Run      @relation(fields: [runId], references: [id])
+  runId         String
+  levelNumber   Int
+  attemptNumber Int      @default(1)
+  turnIndex     Int
+  role          TurnRole
+  content       String   @db.Text
+  createdAt     DateTime @default(now())
 
   // adversary turns (role = user)
-  attackType        String?
-  targetedRuleIds   String[]
+  attackType      String?
+  targetedRuleIds String[]
 
   // player turns (role = assistant) - judge result
   passed            Boolean?
